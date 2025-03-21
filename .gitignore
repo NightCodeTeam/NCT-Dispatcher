@@ -1,0 +1,31 @@
+# Python and IDEs
+__pycache__
+venv
+.env
+.vs
+.vscode
+.idea
+
+# Pyinstall
+*.manifest
+*.spec
+*.exe
+
+# Settings
+*.log
+*.log.*
+test
+test.*
+Loot *
+settings.toml
+./data
+cache
+logs
+
+# Django
+*.pot
+*.pyc
+*.sqlite3
+
+# NODE
+node_modules

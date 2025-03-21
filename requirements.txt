@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+aiohttp
+
+pydantic
+pydantic-settings
+aiosqlite
+sqlalchemy
+
+python-dotenv
