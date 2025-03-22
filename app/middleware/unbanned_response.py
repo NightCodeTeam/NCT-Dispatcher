@@ -7,7 +7,6 @@ from database.session import get_session, new_session
 from database.models.banned_ip import BannedIP
 
 
-
 class UnbannedRequestMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable):
         if request.client is not None:
@@ -16,6 +15,6 @@ class UnbannedRequestMiddleware(BaseHTTPMiddleware):
                     select(BannedIP).where(BannedIP.ip == (request.client.host))
                 )).first()
                 if banned:
-                    return Response(status_code=401, content="banned")
+                    return Response(status_code=400)
             return await call_next(request)
-        return Response(status_code=401, content="client missing")
+        return Response(status_code=400)

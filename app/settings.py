@@ -2,10 +2,10 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    SQLALCHEMY_DATABASE_URL: str = "sqlite+aiosqlite:///dispatcher.sqlite"
+    SQLALCHEMY_DATABASE_URL: str = "sqlite+aiosqlite:///dispatcher.sqlite3"
 
     INCIDENTS_API_PATH: str = "/incidents"
-    INCUDENTS_TAGS: list[str] = ["incidents",]
+    INCIDENTS_TAGS: list[str] = ["incidents",]
 
     # env
     TELEGRAM_BOT_TOKEN: str

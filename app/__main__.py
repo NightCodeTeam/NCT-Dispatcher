@@ -12,8 +12,9 @@ from settings import settings
 app = FastAPI()
 app.include_router(incidents.router)
 
-app.add_middleware(UnbannedRequestMiddleware)
-app.add_middleware(AuthAppMiddleware)
+if not settings.DEBUG:
+    app.add_middleware(UnbannedRequestMiddleware)
+    app.add_middleware(AuthAppMiddleware)
 
 
 if __name__ == "__main__":

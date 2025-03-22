@@ -1,5 +1,3 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.debug import create_log
 from .database import new_session
 

@@ -1,10 +1,11 @@
 from pydantic import BaseModel
+
 from core.debug.debug_dataclass import Level
 
 
-class Incident(BaseModel):
-    title: str
-    message: str
-    logs: list[str]
+class IncidentRequest(BaseModel):
+    name: str
+    log: str
+
+    app_name: str
     level: Level
-    status: str = "open"

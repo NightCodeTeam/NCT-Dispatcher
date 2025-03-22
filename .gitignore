@@ -25,7 +25,11 @@ logs
 # Django
 *.pot
 *.pyc
+
+# DB
 *.sqlite3
+*.sqlite
+*.db
 
 # NODE
 node_modules

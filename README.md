@@ -1,4 +1,4 @@
-# Night Code Team Dispatch
+# Night Code Team Dispatcher
 
 Это система для отслеживания и работой со сбоями, багами и ошибками в работе других серсисов системы NCT
 
