@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     # env
     TELEGRAM_BOT_TOKEN: str
+    TELEGRAM_ADMIN_CHAT: str
     FAST_API_HOST: str
     FAST_API_PORT: int
     DEBUG: bool

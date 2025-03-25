@@ -4,7 +4,8 @@ from json import load, dump
 from os.path import exists
 from os import remove
 from abc import ABC, abstractmethod
-from .requests_dataclasses import ResponseData, headers_to_json, time_to_json, time_from_json
+from .requests_dataclasses import ResponseData
+from .makers_utily import headers_to_json, time_to_json, time_from_json
 from ..single import Singleton
 
 

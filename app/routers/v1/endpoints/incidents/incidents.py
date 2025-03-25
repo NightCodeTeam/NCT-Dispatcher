@@ -20,15 +20,7 @@ class Test(BaseModel):
 
 @router.post('/test')
 async def get_app2(test: Test, request: Request, session: SessionDep):
-    print(test)
-    #res = await session.execute(select(App))
-    res = await session.execute(select(App).where(
-        App.name == test.app, #request.headers.get('app'),
-        App.dispatcher_code == test.dispatch#request.headers.get('dispatch')
-    ))
-    if res.first() is not None:
-        print(res.first()[0])
-    return {'ok'}
+    return {'ok': True}
 
 
 

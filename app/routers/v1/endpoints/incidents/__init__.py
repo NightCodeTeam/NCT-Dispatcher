@@ -1,1 +1,1 @@
-from .incidents_get import router
+from .incidents import router

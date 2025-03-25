@@ -1,44 +1,30 @@
 import aiohttp
-import asyncio
-from core.debug import create_log
+from .requests_dataclasses import ResponseData, Method, AllowedMethods
 from .makers_exceptions import RequestMethodNotFoundException
-from .requests_dataclasses import ResponseData, Method
+from .makers_cache import CacheMaker
+from ..debug import create_log
 from ..single import Singleton
 
 
 class HttpMakerAsync(Singleton):
-    __session: aiohttp.ClientSession
-
-    def __init__(self, base_url: str, headers: dict | None = None):
-        self._base_url = base_url
+    def __init__(
+        self,
+        base_url: str = '',
+        headers: None | dict = None,
+        make_cache: bool = True,
+        cache_class: CacheMaker | None = None
+    ):
+        if headers is None:
+            headers = dict()
+        self._base_url = base_url if base_url.endswith('/') else f'{base_url}/'
         self._headers = headers
-        self.__session = aiohttp.ClientSession(base_url=base_url, headers=headers)
-        # Если инициализировать класс до асинхронного кода вылетит ошибка создания сессии
+        self.make_cache = make_cache
+        self.cache = cache_class
 
-    def __del__(self):
-        loop = asyncio.new_event_loop()
-        loop.create_task(self.close_session())
-        #self.__session = None
-        #self.close_session_sync()
+    def get_full_path(self, url) -> str:
+        return f'{self._base_url}{url}'
 
-    def close_session_sync(self):
-        if not self.__session.closed:
-            try:
-                loop = asyncio.get_event_loop()
-                if loop is not None:
-                    #asyncio.ensure_future(self.close_session(), loop=loop)
-                    loop.create_task(self.close_session())
-            except RuntimeError as error:
-                print(f'>>>>>> {error}')
-                loop = asyncio.new_event_loop()
-                loop.create_task(self.close_session())
-                #asyncio.run(self.close_session())
-
-    async def close_session(self):
-        await self.__session.close()
-        create_log(f'{type(self).__name__} > session closed', 'info')
-
-    async def _make(
+    async def __execute(
             self,
             url: str,
             method: Method,
@@ -48,47 +34,63 @@ class HttpMakerAsync(Singleton):
             headers: dict | None = None,
     ) -> ResponseData | None:
         try:
-            res = None
-            # Убрана часть с кэшем она тут не нужна
-            # ! Делаем запрос
-            match method:
-                case 'GET':
-                    res = await self.__session.get(
-                        url=url,
-                        data=data,
-                        json=json,
-                        params=params,
-                        headers=headers
-                    )
-                case 'POST':
-                    res = await self.__session.post(
-                        url=url,
-                        data=data,
-                        json=json,
-                        params=params,
-                        headers=headers
-                    )
-                case 'PUT':
-                    res = await self.__session.put(
-                        url=url,
-                        data=data,
-                        json=json,
-                        params=params,
-                        headers=headers
-                    )
-                case 'DELETE':
-                    res = await self.__session.delete(
-                        url=url,
-                        data=data,
-                        json=json,
-                        params=params,
-                        headers=headers
-                    )
-            if res is not None:
-                return await self.__get_response_data(res)
-            raise RequestMethodNotFoundException(method)
-        except aiohttp.ClientConnectorError:
-            return None
+            async with aiohttp.ClientSession() as session:
+                match method.upper():
+                    case 'GET':
+                        res = await session.get(
+                            url=self.get_full_path(url),
+                            data=data,
+                            json=json,
+                            params=params,
+                            headers=headers
+                        )
+            return await self.__get_response_data(res)
+            #print(self._base_url)
+            #async with aiohttp.ClientSession(base_url=self._base_url, headers=self._headers) as session:
+            #    if method.upper() in AllowedMethods:
+            #        return await self.__get_response_data(await (getattr(session, method.lower())(
+            #        )))
+            #    else:
+            #        raise RequestMethodNotFoundException(method)
+        except aiohttp.ClientConnectorError as e:
+            create_log(e, 'error')
+        except AttributeError as e:
+            create_log(e, 'crit')
+
+    async def _make(
+            self,
+            url: str,
+            method: Method,
+            data: dict | None = None,
+            json: dict | None = None,
+            params: dict | None = None,
+            headers: dict | None = None,
+            try_only_cache: bool = False
+    ) -> ResponseData | None:
+        url = url if not url.startswith('/') else url[1:]
+        if self.cache is not None:
+            # ! Пытаемся получить кэш по url
+            cache_data = self.cache.get(self.get_full_path(url))
+            if cache_data is not None:
+                # ? Если возвращать только кэш или выполняется условие кэша
+                if try_only_cache or self.cache.condition(cache_data):
+                    return cache_data
+
+        res = await self.__execute(
+            url=url,
+            method=method,
+            data=data,
+            json=json,
+            params=params,
+            headers=headers
+        )
+
+        if self.cache is not None and res is not None:
+            # ! Сохраняем кэш
+            if self.make_cache:
+                self.cache.put(res)
+
+        return res
 
     @staticmethod
     async def __get_response_data(response: aiohttp.ClientResponse) -> ResponseData:
@@ -100,6 +102,8 @@ class HttpMakerAsync(Singleton):
             create_log(e, 'error')
             data = {'error': await response.text()}
         return ResponseData(
-            response.status,
-            data
+            url=response.url,
+            status=response.status,
+            headers=response.headers,
+            json=data,
         )
