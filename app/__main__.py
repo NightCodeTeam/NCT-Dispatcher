@@ -3,10 +3,10 @@ import asyncio
 from threading import Thread
 from fastapi import FastAPI
 
-from app.bot_tele.bot_main import TeleBot
-from app.middleware import AuthAppMiddleware, UnbannedRequestMiddleware
-from app.routers.v1.endpoints import incidents
-from app.database.database import init_db
+from bot_tele.bot_main import TeleBot
+from middleware import AuthAppMiddleware, UnbannedRequestMiddleware
+from routers.v1.endpoints import incidents
+from database.database import init_db
 
 from settings import settings
 
@@ -31,8 +31,8 @@ def generate_bot():
 if __name__ == "__main__":
     asyncio.run(init_db())
 
-    #thread = Thread(target=generate_bot, name='bot')
-    #thread.daemon = True
-    #thread.start()
+    thread = Thread(target=generate_bot, name='bot')
+    thread.daemon = True
+    thread.start()
 
     uvicorn.run(app, host=settings.FAST_API_HOST, port=settings.FAST_API_PORT)
