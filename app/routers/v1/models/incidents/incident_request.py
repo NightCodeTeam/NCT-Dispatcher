@@ -4,8 +4,9 @@ from core.debug.debug_dataclass import Level
 
 
 class IncidentRequest(BaseModel):
-    name: str
-    log: str
+    title: str
+    message: str
+    logs: str
+    level: Level
 
     app_name: str
-    level: Level

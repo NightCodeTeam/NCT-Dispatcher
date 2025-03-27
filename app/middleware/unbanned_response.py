@@ -13,8 +13,8 @@ class UnbannedRequestMiddleware(BaseHTTPMiddleware):
             async with new_session() as session:
                 banned = (await session.execute(
                     select(BannedIP).where(BannedIP.ip == (request.client.host))
-                )).first()
-                if banned:
-                    return Response(status_code=400)
+                )).scalar_one_or_none()
+                if banned is not None:
+                    return Response(status_code=404)
             return await call_next(request)
-        return Response(status_code=400)
+        return Response(status_code=404)
