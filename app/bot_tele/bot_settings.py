@@ -11,4 +11,10 @@ class BotCommands:
 
 
 class BotCallbacks:
-    pass
+    SELECT_INCIDENT = "select_incident_"
+    CLOSE_INCIDENT = "close_incident_"
+    DEL_INCIDENT = "del_incident_"
+
+    ALL_APPS = "all_apps"
+    NEW_APP = "new_app"
+    SELECT_APP = "app_"
