@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 from app.database.models import App, Incident, BannedIP
 
+
 @pytest.mark.asyncio
 async def test_post_incident(test_client: AsyncClient, test_db: AsyncSession):
     test_db.add(

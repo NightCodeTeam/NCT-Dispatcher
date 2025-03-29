@@ -8,8 +8,6 @@ from ..single import Singleton
 
 
 class HttpMaker(Singleton):
-    _session: requests.Session
-
     def __init__(
         self,
         base_url: str = '',

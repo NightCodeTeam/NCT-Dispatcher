@@ -18,8 +18,8 @@ class Incident(Base):
 
     status: Mapped[Literal['open', 'closed']] = mapped_column(default='open')
 
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now())
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.now())
 
     app_id: Mapped[int] = mapped_column(ForeignKey('apps.id'))
     app = relationship('App', back_populates='incidents')

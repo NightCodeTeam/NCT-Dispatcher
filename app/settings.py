@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     FAST_API_PORT: int
     DEBUG: bool
 
-    class Config:
+    class ConfigDict:
         env_file = ".env"
 
 
