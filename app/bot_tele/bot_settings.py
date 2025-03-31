@@ -17,4 +17,8 @@ class BotCallbacks:
 
     ALL_APPS = "all_apps"
     NEW_APP = "new_app"
+    NEW_APP_NAME = "new_app_name"
+    NEW_APP_URL = "new_app_url"
+    NEW_APP_CONFIRM = "new_app_confirm"
+    NEW_APP_CANCEL = "new_app_cancel"
     SELECT_APP = "app_"

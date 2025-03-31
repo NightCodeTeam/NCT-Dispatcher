@@ -1,9 +1,11 @@
 import asyncio
+
 from core.debug import create_log
 from .bot_dataclasses import Update, UpdateMessage, UpdateCallback
 from .bot_requests import HttpTeleBot
 from .bot_callback_class import TeleBotCallbacks
 from .bot_commands_class import TeleBotCommands
+from .bot_parser import parse_bot_callback_command
 
 from .bot_settings import BOT_PREFIX, BOT_SLEEP_TIME_IN_SEC, BotCommands, BotCallbacks
 
@@ -49,4 +51,22 @@ class TeleBot:
 
     async def parse_callback(self, update: UpdateCallback):
         if update.callback_query.data is not None:
-            pass
+            match parse_bot_callback_command(update.callback_query.data):
+                case BotCallbacks.SELECT_INCIDENT:
+                    await self.callbacks.select_incident(update)
+                case BotCallbacks.CLOSE_INCIDENT:
+                    await self.callbacks.close_incident(update)
+                case BotCallbacks.DEL_INCIDENT:
+                    await self.callbacks.del_incident(update)
+                case BotCallbacks.ALL_APPS:
+                    await self.callbacks.all_apps(update)
+                case BotCallbacks.NEW_APP:
+                    await self.callbacks.new_app(update)
+                case BotCallbacks.NEW_APP_CONFIRM:
+                    await self.callbacks.new_app_confirm(update)
+                case BotCallbacks.NEW_APP_CANCEL:
+                    await self.callbacks.new_app_cancel(update)
+                case BotCallbacks.SELECT_APP:
+                    await self.callbacks.select_app(update)
+                case _:
+                    create_log(f'Unknown callback command: {update.callback_query.data}', 'error')

@@ -21,9 +21,9 @@ async def new_app_markup() -> dict:
     return {
         'reply_markup': json.dumps({
             'inline_keyboard': [
-                {'text': 'Название', 'switch_inline_query_current_chat': f'{BotCallbacks.NEW_APP}_name'},
-                {'text': 'url', 'switch_inline_query_current_chat': f'{BotCallbacks.NEW_APP}_back_url'},
-                {'text': 'Создать', 'callback_data': f'{BotCallbacks.NEW_APP}_create'}
+                {'text': 'Название', 'switch_inline_query_current_chat': BotCallbacks.NEW_APP_NAME},
+                {'text': 'url', 'switch_inline_query_current_chat': BotCallbacks.NEW_APP_URL},
+                {'text': 'Создать', 'callback_data': BotCallbacks.NEW_APP_CONFIRM}
             ]
         })
     }
