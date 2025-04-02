@@ -2,8 +2,8 @@ from typing import Union
 from sqlalchemy import text, select, MetaData
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import Incident, App, BannedIP
-from app.database.database import Base
+from .models import Incident, App, BannedIP
+from .database import Base
 from .session import new_session
 
 

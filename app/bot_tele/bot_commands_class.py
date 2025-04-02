@@ -1,7 +1,11 @@
 from core.debug import create_log
-from .bot_requests import HttpTeleBot
+from database.session import new_session
+from database.utils import get_incidents_from_db
 
+from .bot_requests import HttpTeleBot
 from .bot_dataclasses.updates_dataclasses import UpdateMessage
+from .bot_additional_classes import BotStartMessage
+
 from .bot_settings import BotCommands, BOT_PREFIX
 from settings import settings
 #from text_messages import
@@ -21,6 +25,8 @@ class TeleBotCommands:
 
     async def start(self, update: UpdateMessage):
         create_log(f'command_start > {update}', 'debug')
+        incedents = len(await get_incidents_from_db('incidents.status = "open"'))
+        await self.client.sent_msg(BotStartMessage(incedents, message_id=update.message.message_id))
 
 
     # ! Проверка что команда админская

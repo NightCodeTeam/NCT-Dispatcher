@@ -4,6 +4,7 @@ from .entity_dataclasses import Entity
 from .message_dataclasses import Message
 from .updates_dataclasses import Update, UpdateMessage, UpdateCallback
 from .user_dataclasses import User
+from .bot_message import BotMessage, BotReplyMarkup, BotInlineKeyboardLine
 
 
 __all__ = (
@@ -15,4 +16,7 @@ __all__ = (
     'UpdateMessage',
     'UpdateCallback',
     'User',
+    'BotMessage',
+    'BotReplyMarkup',
+    'BotInlineKeyboardLine'
 )

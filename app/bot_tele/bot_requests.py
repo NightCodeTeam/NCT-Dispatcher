@@ -1,7 +1,11 @@
+import json
+
+from sqlalchemy.engine import create
+
 from core.debug import create_log
 from core.requests_makers import HttpMakerAsync
 from core.dot_env import env_int
-from .bot_dataclasses import Update
+from .bot_dataclasses import Update, BotMessage, BotReplyMarkup, BotInlineKeyboardLine
 from .bot_dataclasses.utility import get_update_dc
 from .middleware.middleware_main import BotMiddlewareMain
 from .middleware.middleware_abstract import BotMiddleware
@@ -54,7 +58,7 @@ class HttpTeleBot(HttpMakerAsync):
                         except KeyError as e:
                             create_log(e, 'error')
                     else:
-                        await self.sent_msg(
+                        await self.sent_msg2(
                             chat_id=env_int("TELEGRAM_ADMIN_CHAT"),
                             message=msg
                         )
@@ -64,7 +68,20 @@ class HttpTeleBot(HttpMakerAsync):
         create_log('Bot cant get updates: > res is None', 'error')
         return ()
 
-    async def sent_msg(self, chat_id: int, message: str, data: dict | None = None, addition_params: dict | None = None) -> bool:
+    async def sent_msg(self, message: BotMessage, data: dict | None = None) -> bool:
+        res = await self._make(
+                url=f'/bot{self.token}/sendMessage',
+                method='GET',
+                params=message.to_dict,
+                data=data,
+            )
+        if res is not None and res.json['ok']:
+            return True
+        create_log(f'Bot cant send message: > res is not OK: {res}', 'error')
+        return False
+
+
+    async def sent_msg2(self, chat_id: int, message: str, data: dict | None = None, addition_params: dict | None = None) -> bool:
         params = {
             'chat_id': chat_id,
             'text': message
@@ -95,7 +112,7 @@ class HttpTeleBot(HttpMakerAsync):
             }
         )
 
-    async def edit_message_text(self, chat_id: int, message_id: int, new_message: str, addition_data: dict | None = None):
+    async def edit_message_text2(self, chat_id: int, message_id: int, new_message: str, addition_data: dict | None = None):
         data = {
             'chat_id': chat_id,
             'message_id': message_id,
@@ -113,7 +130,32 @@ class HttpTeleBot(HttpMakerAsync):
         create_log('Bot cant edit msg text: > res is None', 'error')
         return False
 
-    async def edit_message_reply_markup(self, chat_id: int, message_id: int, new_reply_markup: dict, addition_data: dict | None = None):
+    async def edit_message_text(self, message: BotMessage):
+            res = await self._make(
+                        url=f'/bot{self.token}/editMessageText',
+                        method='GET',
+                        data=message.to_dict,
+                    )
+
+            if res is not None and res.json['ok']:
+                return True
+            create_log(f'Bot cant edit msg text: > {res}', 'error')
+            return False
+
+    async def edit_message_reply_markup(self, message: BotMessage):
+        res = await self._make(
+                    url=f'/bot{self.token}/editMessageReplyMarkup',
+                    method='GET',
+                    data=message.to_dict,
+                )
+
+        if res is not None and res.json['ok']:
+            return True
+        create_log(f'Bot cant edit msg reply markup: > {res}', 'error')
+        return False
+
+
+    async def edit_message_reply_markup2(self, chat_id: int, message_id: int, new_reply_markup: dict, addition_data: dict | None = None):
         data = {
             'chat_id': chat_id,
             'message_id': message_id,

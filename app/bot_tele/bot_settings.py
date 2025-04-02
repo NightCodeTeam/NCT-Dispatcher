@@ -11,6 +11,10 @@ class BotCommands:
 
 
 class BotCallbacks:
+    BACK = "back"
+
+    ALL_INCIDENTS = "all_incidents"
+    OPEN_INCIDENTS = "open_incidents"
     SELECT_INCIDENT = "select_incident_"
     CLOSE_INCIDENT = "close_incident_"
     DEL_INCIDENT = "del_incident_"
