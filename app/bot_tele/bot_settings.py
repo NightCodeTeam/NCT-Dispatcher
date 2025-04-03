@@ -26,3 +26,5 @@ class BotCallbacks:
     NEW_APP_CONFIRM = "new_app_confirm"
     NEW_APP_CANCEL = "new_app_cancel"
     SELECT_APP = "app_"
+    SELECT_APP_INCIDENTS = 'app_incedents_'
+    DEL_APP = "del_app_"

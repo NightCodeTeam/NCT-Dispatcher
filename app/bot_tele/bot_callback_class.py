@@ -10,7 +10,9 @@ from .bot_additional_classes import (
     BotIncedentClosed,
     BotIncedentDeleted,
     BotShowIncidents,
-    BotShowApps
+    BotShowApps,
+    BotSelectedApp,
+    BotSelectedIncident,
 )
 
 #from text_messages import
@@ -30,20 +32,26 @@ class TeleBotCallbacks:
     # ! Инцеденты
     async def all_incidents(self, update: UpdateCallback):
         incidents = await get_incidents_from_db(limit=90)
-        await self.client.sent_msg(BotShowIncidents(
+        await self.client.edit_message_text(BotShowIncidents(
             message_id=update.callback_query.message.message_id,
             incidents=incidents
         ))
 
     async def open_incidents(self, update: UpdateCallback):
         incidents = await get_incidents_from_db('incidents.status = "open"', limit=90)
-        await self.client.sent_msg(BotShowIncidents(
+        await self.client.edit_message_text(BotShowIncidents(
             message_id=update.callback_query.message.message_id,
             incidents=incidents
         ))
 
     async def select_incident(self, update: UpdateCallback):
-        pass
+        incident = await get_incidents_from_db(f'incidents.id={parse_bot_callback_id(update.callback_query.data)}')
+        app = await get_apps_from_db(f'apps.id={incident[0].app_id}')
+        await self.client.edit_message_text(BotSelectedIncident(
+            message_id=update.callback_query.message.message_id,
+            app=app[0],
+            incident=incident[0]
+        ))
 
     async def close_incident(self, update: UpdateCallback):
         create_log('close_incident >', 'debug')
@@ -79,10 +87,29 @@ class TeleBotCallbacks:
 
     # ! Приложения
     async def all_apps(self, update: UpdateCallback):
-        pass
+        apps = await get_apps_from_db()
+        await self.client.edit_message_text(
+            BotShowApps(
+                message_id=update.callback_query.message.message_id,
+                apps=apps
+            )
+        )
 
     async def select_app(self, update: UpdateCallback):
-            pass
+        app = await get_apps_from_db(f'apps.id={parse_bot_callback_id(update.callback_query.data)}')
+        await self.client.edit_message_text(BotSelectedApp(
+            message_id=update.callback_query.message.message_id,
+            app=app[0]
+        ))
+
+    async def app_selected_incidents(self, update: UpdateCallback):
+        incidents = await get_incidents_from_db(
+            f'incidents.app_id={parse_bot_callback_id(update.callback_query.data)}'
+        )
+        await self.client.edit_message_text(BotShowIncidents(
+            message_id=update.callback_query.message.message_id,
+            incidents=incidents
+        ))
 
     async def new_app(self, update: UpdateCallback):
         pass

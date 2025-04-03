@@ -52,6 +52,12 @@ class TeleBot:
     async def parse_callback(self, update: UpdateCallback):
         if update.callback_query.data is not None:
             match parse_bot_callback_command(update.callback_query.data):
+                case BotCallbacks.BACK:
+                    await self.callbacks.back(update)
+                case BotCallbacks.ALL_INCIDENTS:
+                    await self.callbacks.all_incidents(update)
+                case BotCallbacks.OPEN_INCIDENTS:
+                    await self.callbacks.open_incidents(update)
                 case BotCallbacks.SELECT_INCIDENT:
                     await self.callbacks.select_incident(update)
                 case BotCallbacks.CLOSE_INCIDENT:
@@ -60,6 +66,8 @@ class TeleBot:
                     await self.callbacks.del_incident(update)
                 case BotCallbacks.ALL_APPS:
                     await self.callbacks.all_apps(update)
+                case BotCallbacks.SELECT_APP_INCIDENTS:
+                    await self.callbacks.app_selected_incidents(update)
                 case BotCallbacks.NEW_APP:
                     await self.callbacks.new_app(update)
                 case BotCallbacks.NEW_APP_CONFIRM:
