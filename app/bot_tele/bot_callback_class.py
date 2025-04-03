@@ -13,6 +13,7 @@ from .bot_additional_classes import (
     BotShowApps,
     BotSelectedApp,
     BotSelectedIncident,
+    BotNewAppMessage,
 )
 
 #from text_messages import
@@ -112,7 +113,9 @@ class TeleBotCallbacks:
         ))
 
     async def new_app(self, update: UpdateCallback):
-        pass
+        await self.client.edit_message_text(BotNewAppMessage(
+            message_id=update.callback_query.message.message_id
+        ))
 
     async def new_app_confirm(self, update: UpdateCallback):
         pass

@@ -66,6 +66,7 @@ class BotNewIncidentMessage(BotAdminChat):
             message_id=message_id
         )
 
+
 class BotError(BotAdminChat):
     def __init__(self, error_message: str):
         super().__init__(
@@ -121,6 +122,7 @@ class BotStartMessage(BotAdminChat):
                 ]
             ])
         )
+
 
 class BotShowIncidents(BotAdminChat):
     def __init__(self, message_id: int, incidents: list[Incident] | tuple[Incident]):
@@ -200,4 +202,38 @@ class BotSelectedIncident(BotNewIncidentMessage):
             incident_id=incident.id,
             back=True,
             message_id=message_id
+        )
+
+
+class BotNewAppMessage(BotAdminChat):
+    def __init__(self, message_id: int):
+        super().__init__(
+            text=f'Создание нового приложения:',
+            message_id=message_id,
+            reply_markup=BotReplyMarkup([
+                [
+                    BotInlineKeyboardLine(
+                        text='Название:',
+                        callback_data=BotCallbacks.NEW_APP_NAME,
+                    )
+                ],
+                [
+                    BotInlineKeyboardLine(
+                        text='URL:',
+                        callback_data=BotCallbacks.NEW_APP_URL,
+                    )
+                ],
+                [
+                    BotInlineKeyboardLine(
+                        text='ПОДТВЕРДИТЬ!:',
+                        callback_data=BotCallbacks.BACK,
+                    )
+                ],
+                [
+                    BotInlineKeyboardLine(
+                        text='Отмена',
+                        callback_data=BotCallbacks.BACK,
+                    )
+                ],
+            ])
         )
