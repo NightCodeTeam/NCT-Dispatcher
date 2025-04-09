@@ -1,33 +1,23 @@
 from core.debug import create_log
+from core.code_gen import generate_dispatcher_code
+
 from database.session import new_session
-from database.utils import get_incidents_from_db
+from database.utils import get_apps_from_db, get_incidents_from_db
+from database.models import App
 
 from .bot_requests import HttpTeleBot
-from .bot_dataclasses.updates_dataclasses import UpdateMessage
-from .bot_additional_classes import BotStartMessage
+from .bot_exceplions import BotMessageNoneException
+from .bot_dataclasses.updates_dataclasses import UpdateCallback, UpdateMessage
+from .bot_additional_classes import BotStartMessage, BotNewAppMessage
 
 from .bot_settings import BotCommands, BOT_PREFIX
 from settings import settings
 #from text_messages import
 
 
-class TeleBotCommands:
+class BaseBotCommands:
     def __init__(self, client: HttpTeleBot):
         self.client = client
-
-    async def not_found(self, update: UpdateMessage):
-        create_log(f'command_not_found > {update}', 'debug')
-        await self.client.sent_msg_reply(
-            update.message.chat.id,
-            update.message.message_id,
-            f'Команда не найдена: {update.message.text.split(' ')[0] if update.message.text is not None else ''}\nИспользуйте команду /start чтобы узнать подробности',
-        )
-
-    async def start(self, update: UpdateMessage):
-        create_log(f'command_start > {update}', 'debug')
-        incedents = len(await get_incidents_from_db('incidents.status = "open"'))
-        await self.client.sent_msg(BotStartMessage(incedents, message_id=update.message.message_id))
-
 
     # ! Проверка что команда админская
     @staticmethod
@@ -55,3 +45,55 @@ class TeleBotCommands:
                 create_log(f'Chat {update.message.chat.id} try use admin command {func.__name__}', 'info')
             return None
         return wrapper
+
+class TeleBotCommands(BaseBotCommands):
+    def __init__(self, client: HttpTeleBot):
+        super().__init__(client = client)
+
+    async def not_found(self, update: UpdateMessage):
+            create_log(f'command_not_found > {update}', 'info')
+
+    async def start(self, update: UpdateMessage | UpdateCallback):
+        create_log(f'command_start > {update}', 'debug')
+        incedents = len(await get_incidents_from_db('incidents.status = "open"'))
+        if type(update) is UpdateCallback:
+            if update.callback_query.message is not None \
+            and update.callback_query.message.message_id is not None:
+                await self.client.sent_msg(BotStartMessage(
+                    incedents, message_id=update.callback_query.message.message_id
+                ))
+        elif type(update) is UpdateMessage:
+            if update.message is not None and update.message.message_id is not None:
+                await self.client.sent_msg(BotStartMessage(
+                    incedents, message_id=update.message.message_id
+                ))
+
+    async def new_app(self, update: UpdateMessage):
+        create_log(f'command_new_app > {update}', 'debug')
+        #if update.message is None and update.message.message_id is None \
+        #and update.message.text is None:
+        #    raise BotMessageNoneException(update)
+
+        app_name, app_url = update.message.text.split('\n')
+        app_name = app_name.replace(f'{BOT_PREFIX}{BotCommands.NEW_APP} ', '')
+
+        # ? Генерируем код доступа
+        dispatcher_codes = [app.dispatcher_code for app in await get_apps_from_db()]
+        code = generate_dispatcher_code()
+        while True:
+            if code not in dispatcher_codes:
+                break
+            else:
+                code = generate_dispatcher_code()
+
+        async with new_session() as session:
+            session.add(App(
+                name=app_name,
+                url=app_url,
+                dispatcher_code=code
+            ))
+            await session.commit()
+
+        await self.client.sent_msg(
+            BotNewAppMessage(name=app_name, url=app_url, code=code)
+        )

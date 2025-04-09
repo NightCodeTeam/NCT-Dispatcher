@@ -45,6 +45,8 @@ class TeleBot:
             match update.message.text.split(' ')[0][1:].lower():
                 case BotCommands.START | BotCommands.HELP:
                     await self.commands.start(update)
+                case BotCommands.NEW_APP:
+                    await self.commands.new_app(update)
 
                 case _:
                     await self.commands.not_found(update)
@@ -53,6 +55,7 @@ class TeleBot:
         if update.callback_query.data is not None:
             match parse_bot_callback_command(update.callback_query.data):
                 case BotCallbacks.BACK:
+                    #await self.commands.start(update)
                     await self.callbacks.back(update)
                 case BotCallbacks.ALL_INCIDENTS:
                     await self.callbacks.all_incidents(update)
@@ -76,5 +79,7 @@ class TeleBot:
                     await self.callbacks.new_app_cancel(update)
                 case BotCallbacks.SELECT_APP:
                     await self.callbacks.select_app(update)
+                case BotCallbacks.DEL_APP:
+                    await self.callbacks.del_app(update)
                 case _:
                     create_log(f'Unknown callback command: {update.callback_query.data}', 'error')

@@ -27,6 +27,14 @@ class BotAdminChat(BotMessage):
         )
 
 
+class BotBackButton(BotInlineKeyboardLine):
+    def __init__(self):
+        super().__init__(
+            text='<- назад',
+            callback_data=BotCallbacks.BACK
+        )
+
+
 class BotNewIncidentMessage(BotAdminChat):
     def __init__(
         self,
@@ -51,12 +59,7 @@ class BotNewIncidentMessage(BotAdminChat):
         ]]
         if back:
             lines.append(
-                [
-                    BotInlineKeyboardLine(
-                        text="<- Назад",
-                        callback_data=BotCallbacks.BACK
-                    )
-                ]
+                [BotBackButton()]
             )
         super().__init__(
             text=f'{app_name}\n{title}\n{level}\n\n{message}\n```txt\n{logs}\n```',
@@ -87,6 +90,20 @@ class BotIncedentDeleted(BotAdminChat):
         super().__init__(
             text=f"Инцидент {incident_title} удален",
             message_id=message_id,
+            reply_markup=BotReplyMarkup(
+                [[BotBackButton()]]
+            )
+        )
+
+
+class BotAppDeleted(BotAdminChat):
+    def __init__(self, message_id: int, app_name: str):
+        super().__init__(
+            text=f"Приложение {app_name} удалено",
+            message_id=message_id,
+            reply_markup=BotReplyMarkup(
+                [[BotBackButton()]]
+            )
         )
 
 
@@ -114,12 +131,34 @@ class BotStartMessage(BotAdminChat):
                         callback_data=BotCallbacks.ALL_APPS
                     )
                 ],
+            ])
+        )
+
+
+class BotBackMessage(BotAdminChat):
+    def __init__(self, new_incedents_len: int, message_id: int):
+        super().__init__(
+            text=f'Новых инцедентов: {new_incedents_len}',
+            message_id=message_id,
+            reply_markup=BotReplyMarkup([
                 [
                     BotInlineKeyboardLine(
-                        text='Новое приложение',
-                        callback_data=BotCallbacks.NEW_APP
+                        text='Новые инциденты',
+                        callback_data=BotCallbacks.OPEN_INCIDENTS
                     )
-                ]
+                ],
+                [
+                    BotInlineKeyboardLine(
+                        text='Список всех инцидентов',
+                        callback_data=BotCallbacks.ALL_INCIDENTS
+                    )
+                ],
+                [
+                    BotInlineKeyboardLine(
+                        text='Все приложения',
+                        callback_data=BotCallbacks.ALL_APPS
+                    )
+                ],
             ])
         )
 
@@ -132,12 +171,7 @@ class BotShowIncidents(BotAdminChat):
                 callback_data=f'{BotCallbacks.SELECT_INCIDENT}{incident.id}'
             )
         ] for incident in incidents]
-        lines.append([
-            BotInlineKeyboardLine(
-                text='<- ВЕРНУТЬСЯ',
-                callback_data=BotCallbacks.BACK
-            )
-        ])
+        lines.append([BotBackButton()])
         super().__init__(
             text=f'Список инцидентов:',
             message_id=message_id,
@@ -153,12 +187,7 @@ class BotShowApps(BotAdminChat):
                 callback_data=f'{BotCallbacks.SELECT_APP}{app.id}'
             )
         ] for app in apps]
-        lines.append([
-            BotInlineKeyboardLine(
-                text='<- ВЕРНУТЬСЯ',
-                callback_data=BotCallbacks.BACK
-            )
-        ])
+        lines.append([BotBackButton()])
         super().__init__(
             text=f'Список приложений:',
             message_id=message_id,
@@ -169,10 +198,7 @@ class BotShowApps(BotAdminChat):
 class BotSelectedApp(BotAdminChat):
     def __init__(self, message_id: int, app: App):
         lines = [[
-            BotInlineKeyboardLine(
-                text='<- Назад',
-                callback_data=BotCallbacks.BACK
-            ),
+            BotBackButton(),
             BotInlineKeyboardLine(
                 text='Удалить',
                 callback_data=f'{BotCallbacks.DEL_APP}{app.id}'
@@ -185,7 +211,7 @@ class BotSelectedApp(BotAdminChat):
             )
         ]]
         super().__init__(
-            text=f'Название: {app.name}\nCode:`{app.dispatcher_code}`\nURL: {app.url}',
+            text=f'Название: {app.name}\nCode: `{app.dispatcher_code}`\nURL: ',
             message_id=message_id,
             reply_markup=BotReplyMarkup(lines)
         )
@@ -205,7 +231,7 @@ class BotSelectedIncident(BotNewIncidentMessage):
         )
 
 
-class BotNewAppMessage(BotAdminChat):
+class BotNewAppMessageOLD(BotAdminChat):
     def __init__(self, message_id: int):
         super().__init__(
             text=f'Создание нового приложения:',
@@ -214,13 +240,13 @@ class BotNewAppMessage(BotAdminChat):
                 [
                     BotInlineKeyboardLine(
                         text='Название:',
-                        callback_data=BotCallbacks.NEW_APP_NAME,
+                        switch_inline_query_current_chat=BotCallbacks.NEW_APP_NAME,
                     )
                 ],
                 [
                     BotInlineKeyboardLine(
                         text='URL:',
-                        callback_data=BotCallbacks.NEW_APP_URL,
+                        switch_inline_query_current_chat=BotCallbacks.NEW_APP_URL,
                     )
                 ],
                 [
@@ -229,11 +255,13 @@ class BotNewAppMessage(BotAdminChat):
                         callback_data=BotCallbacks.BACK,
                     )
                 ],
-                [
-                    BotInlineKeyboardLine(
-                        text='Отмена',
-                        callback_data=BotCallbacks.BACK,
-                    )
-                ],
+                [BotBackButton()],
             ])
+        )
+
+
+class BotNewAppMessage(BotAdminChat):
+    def __init__(self, name, url, code):
+        super().__init__(
+            text=f'Создано новое приложение\nНазвание: {name}\nURL: не отображается\nКод доступа: `{code}`',
         )

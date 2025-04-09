@@ -8,6 +8,7 @@ BOT_SLEEP_TIME_IN_SEC: Final = 1
 class BotCommands:
     HELP = "help"
     START = "start"
+    NEW_APP = "new"
 
 
 class BotCallbacks:

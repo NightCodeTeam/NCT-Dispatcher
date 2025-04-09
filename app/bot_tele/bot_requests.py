@@ -18,11 +18,11 @@ class HttpTeleBot(HttpMakerAsync):
     token = settings.TELEGRAM_BOT_TOKEN
     # Middleware - это какая либо защита от атак на бота если её пропустили сервера телеграмм
     middleware = BotMiddlewareMain((
-        #AdminChatMiddleware(),
+        AdminChatMiddleware(),
         #UserBannedMiddleware(),
         #ChatBannedMiddleware()
     ))
-    last_update = 0 # необходимо для работы по api
+    __last_update = 0 # необходимо для работы по api
 
     def __init__(self):
         super().__init__(
@@ -41,7 +41,7 @@ class HttpTeleBot(HttpMakerAsync):
             url=f'/bot{self.token}/getUpdates',
             method='GET',
             params={
-                'offset': self.last_update,
+                'offset': self.__last_update,
                 'limit': BOT_MAX_UPDATES
             }
         )
@@ -58,11 +58,11 @@ class HttpTeleBot(HttpMakerAsync):
                         except KeyError as e:
                             create_log(e, 'error')
                     else:
-                        await self.sent_msg2(
+                        await self.sent_msg(BotMessage(
                             chat_id=env_int("TELEGRAM_ADMIN_CHAT"),
-                            message=msg
-                        )
-                    self.last_update = update['update_id'] + 1
+                            text=msg if msg is not None else 'Error no message'
+                        ))
+                    self.__last_update = update['update_id'] + 1
                 return tuple(ans)
             create_log(f'Bot cant get updates: > res is not OK: {res.json}', 'error')
         create_log('Bot cant get updates: > res is None', 'error')
@@ -80,98 +80,30 @@ class HttpTeleBot(HttpMakerAsync):
         create_log(f'Bot cant send message: > res is not OK: {res}', 'error')
         return False
 
-
-    async def sent_msg2(self, chat_id: int, message: str, data: dict | None = None, addition_params: dict | None = None) -> bool:
-        params = {
-            'chat_id': chat_id,
-            'text': message
-        }
-        if addition_params is not None:
-            params.update(addition_params)
+    async def edit_message_text(self, message: BotMessage):
         res = await self._make(
-                    url=f'/bot{self.token}/sendMessage',
-                    method='GET',
-                    params=params,
-                    data=data,
-                )
-        if res is not None:
-            return True if res.json['ok'] else False
-        create_log('Bot cant send msg: > res is None', 'error')
-        return False
-
-    async def sent_msg_reply(self, chat_id: int, message_id: int, message: str, data: dict | None = None):
-        return await self.sent_msg(
-            chat_id=chat_id,
-            message=message,
-            data=data,
-            addition_params={
-                'reply_to_message_id': message_id,
-                #'reply_parameters': {
-                #    'message_id': message_id,
-                #},
-            }
+            url=f'/bot{self.token}/editMessageText',
+            method='GET',
+            data=message.to_dict,
         )
 
-    async def edit_message_text2(self, chat_id: int, message_id: int, new_message: str, addition_data: dict | None = None):
-        data = {
-            'chat_id': chat_id,
-            'message_id': message_id,
-            'text': new_message,
-        }
-        if addition_data is not None:
-            data.update(addition_data)
-        res = await self._make(
-                    url=f'/bot{self.token}/editMessageText',
-                    method='GET',
-                    data=data,
-                )
-        if res is not None:
-            return True if res.json['ok'] else False
-        create_log('Bot cant edit msg text: > res is None', 'error')
+        if res is not None and res.json['ok']:
+            return True
+        create_log(f'Bot cant edit msg text: > {res}', 'error')
         return False
-
-    async def edit_message_text(self, message: BotMessage):
-            res = await self._make(
-                        url=f'/bot{self.token}/editMessageText',
-                        method='GET',
-                        data=message.to_dict,
-                    )
-
-            if res is not None and res.json['ok']:
-                return True
-            create_log(f'Bot cant edit msg text: > {res}', 'error')
-            return False
 
     async def edit_message_reply_markup(self, message: BotMessage):
         res = await self._make(
-                    url=f'/bot{self.token}/editMessageReplyMarkup',
-                    method='GET',
-                    data=message.to_dict,
-                )
+            url=f'/bot{self.token}/editMessageReplyMarkup',
+            method='GET',
+            data=message.to_dict,
+        )
 
         if res is not None and res.json['ok']:
             return True
         create_log(f'Bot cant edit msg reply markup: > {res}', 'error')
         return False
 
-
-    async def edit_message_reply_markup2(self, chat_id: int, message_id: int, new_reply_markup: dict, addition_data: dict | None = None):
-        data = {
-            'chat_id': chat_id,
-            'message_id': message_id,
-            'reply_markup': new_reply_markup,
-        }
-        if addition_data is not None:
-            data.update(addition_data)
-        res = await self._make(
-                    url=f'/bot{self.token}/editMessageReplyMarkup',
-                    method='GET',
-                    data=data,
-                )
-        if res is not None:
-            return True if res.json['ok'] else False
-        create_log('Bot cant edit msg text: > res is None', 'error')
-        return False
-
     async def get_chat(self, chat_id: int) -> dict | None:
-        return (await self._make(url=f'/bot{self.token}/getChat', method='GET', params={'chat_id': chat_id})).json
+        res = await self._make(url=f'/bot{self.token}/getChat', method='GET', params={'chat_id': chat_id})
+        return res.json if res is not None else None
