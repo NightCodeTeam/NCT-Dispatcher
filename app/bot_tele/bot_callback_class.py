@@ -183,7 +183,8 @@ class TeleBotCallbacks:
         async with new_session() as session:
             app_id = parse_bot_callback_id(update.callback_query.data)
             if app_id is not None:
-                app = (await get_apps_from_db(f'apps.id = {app_id}', session=session))[0]
+                app = await get_apps_from_db(f'apps.id = {app_id}', session=session)
+                app = app[0]
                 await session.delete(app)
                 await session.commit()
 

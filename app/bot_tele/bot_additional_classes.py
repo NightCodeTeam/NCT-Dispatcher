@@ -82,6 +82,9 @@ class BotIncedentClosed(BotAdminChat):
         super().__init__(
             text=f"Инцидент {incident_title} закрыт",
             message_id=message_id,
+            reply_markup=BotReplyMarkup(
+                [[BotBackButton()]]
+            )
         )
 
 
