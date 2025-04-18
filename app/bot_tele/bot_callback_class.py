@@ -1,22 +1,20 @@
 from core.debug import create_log
 from database.utils import get_incidents_from_db, get_apps_from_db, get_banned_ips_from_db
-from database.session import connect_session, get_session, new_session
+from database.session import new_session
 from .bot_dataclasses import UpdateCallback
 from .bot_requests import HttpTeleBot
 from .bot_parser import parse_bot_callback_id
 from .bot_exceplions import BotMessageNoneException, BotCallbackDataNoneException
 from .bot_additional_classes import (
-    BotStartMessage,
     BotBackMessage,
     BotError,
-    BotIncedentClosed,
-    BotIncedentDeleted,
+    BotIncidentClosed,
+    BotIncidentDeleted,
     BotAppDeleted,
     BotShowIncidents,
     BotShowApps,
     BotSelectedApp,
     BotSelectedIncident,
-    BotNewAppMessage,
     BotBanDeleted,
     BotShowBans,
     BotSelectedBan,
@@ -106,7 +104,7 @@ class TeleBotCallbacks:
                 await session.commit()
 
                 await self.client.edit_message_text(
-                    BotIncedentClosed(update.callback_query.message.message_id, incident.title)
+                    BotIncidentClosed(update.callback_query.message.message_id, incident.title)
                 )
             else:
                 create_log(f'Invalid incident ID: {incident_id} : {update}', 'error')
@@ -126,7 +124,7 @@ class TeleBotCallbacks:
                 await session.commit()
 
                 await self.client.edit_message_text(
-                    BotIncedentDeleted(update.callback_query.message.message_id, incident.title)
+                    BotIncidentDeleted(update.callback_query.message.message_id, incident.title)
                 )
             else:
                 create_log(f'Invalid incident ID: {incident_id} : {update}', 'error')

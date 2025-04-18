@@ -1,9 +1,10 @@
 from typing import Final
+from core.dot_env import env_int
 
 
 BOT_MAX_UPDATES: Final = 100
 BOT_PREFIX: Final = '/'
-BOT_SLEEP_TIME_IN_SEC: Final = 1
+BOT_SLEEP_TIME_IN_SEC: Final = env_int('BOT_SLEEP')
 
 class BotCommands:
     HELP = "help"

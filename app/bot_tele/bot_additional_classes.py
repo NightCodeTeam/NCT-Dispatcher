@@ -76,7 +76,7 @@ class BotError(BotAdminChat):
         )
 
 
-class BotIncedentClosed(BotAdminChat):
+class BotIncidentClosed(BotAdminChat):
     def __init__(self, message_id: int, incident_title: str):
         super().__init__(
             text=f"Инцидент {incident_title} закрыт",
@@ -87,7 +87,7 @@ class BotIncedentClosed(BotAdminChat):
         )
 
 
-class BotIncedentDeleted(BotAdminChat):
+class BotIncidentDeleted(BotAdminChat):
     def __init__(self, message_id: int, incident_title: str):
         super().__init__(
             text=f"Инцидент {incident_title} удален",
@@ -110,9 +110,9 @@ class BotAppDeleted(BotAdminChat):
 
 
 class BotStartMessage(BotAdminChat):
-    def __init__(self, new_incedents_len: int, message_id: int):
+    def __init__(self, new_incidents_len: int, message_id: int):
         super().__init__(
-            text=f'Новых инцедентов: {new_incedents_len}',
+            text=f'Новых инцидентов: {new_incidents_len}',
             reply_to_message_id=message_id,
             reply_markup=BotReplyMarkup([
                 [
@@ -133,14 +133,20 @@ class BotStartMessage(BotAdminChat):
                         callback_data=BotCallbacks.ALL_APPS
                     )
                 ],
+                [
+                    BotInlineKeyboardLine(
+                        text='Все баны',
+                        callback_data=BotCallbacks.ALL_BANS
+                    )
+                ],
             ])
         )
 
 
 class BotBackMessage(BotAdminChat):
-    def __init__(self, new_incedents_len: int, message_id: int):
+    def __init__(self, new_incidents_len: int, message_id: int):
         super().__init__(
-            text=f'Новых инцедентов: {new_incedents_len}',
+            text=f'Новых инцидентов: {new_incidents_len}',
             message_id=message_id,
             reply_markup=BotReplyMarkup([
                 [
@@ -303,7 +309,7 @@ class BotSelectedBan(BotAdminChat):
 class BotBanDeleted(BotAdminChat):
     def __init__(self, message_id: int, ban_ip: str):
         super().__init__(
-            text=f"Ban {ban_ip} удален",
+            text=f"{ban_ip} удален",
             message_id=message_id,
             reply_markup=BotReplyMarkup(
                 [[BotBackButton()]]

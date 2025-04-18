@@ -71,8 +71,8 @@ class TeleBot:
                     await self.callbacks.all_apps(update)
                 case BotCallbacks.SELECT_APP_INCIDENTS:
                     await self.callbacks.app_selected_incidents(update)
-                case BotCallbacks.NEW_APP:
-                    await self.callbacks.new_app(update)
+                #case BotCallbacks.NEW_APP:
+                #    await self.callbacks.new_app(update)
                 case BotCallbacks.NEW_APP_CONFIRM:
                     await self.callbacks.new_app_confirm(update)
                 case BotCallbacks.NEW_APP_CANCEL:
