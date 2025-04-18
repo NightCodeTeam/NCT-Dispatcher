@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 from typing_extensions import Callable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -16,9 +18,11 @@ class AuthAppMiddleware(BaseHTTPMiddleware):
             async with new_session() as session:
                 if request.headers.get('dispatch') is not None \
                 and (await request.json()).get('app_name') is not None:
+                    app_name = (await request.json()).get('app_name')
+                    code = request.headers.get('dispatch')
                     app = await get_apps_from_db(
-                        f'apps.name = "{(await request.json())['app_name']}"\
-                         AND apps.dispatcher_code = "{request.headers.get('dispatch')}"'
+                        f'apps.name = "{app_name}"\
+                         AND apps.dispatcher_code = "{code}"'
                     )
                     #app = (await session.execute(
                     #    select(App).where(and_(
@@ -29,15 +33,16 @@ class AuthAppMiddleware(BaseHTTPMiddleware):
                     if app[0] is not None:
                         create_log(f'App: {app[0].name} got access', 'info')
                         return await call_next(request)
-                    create_log(f'Incorrect dispatch app name or code > {(await request.json())['app_name']}\
+                    create_log(f'Incorrect dispatch app name or code > {app_name}\
                                {request.headers.get('dispatch')}')
                     session.add(
                         BannedIP(ip = rm_http(request.client.host), reason="Uncorrected dispatch app code")
                     )
                     await session.commit()
                 else:
+                    app_name = (await request.json()).get('app_name')
                     create_log(f"New ban > dispatch = {request.headers.get('dispatch')}\n\
-                    app = {(await request.json()).get('app_name')}", 'info')
+                    app = {app_name}", 'info')
                     session.add(
                         BannedIP(ip = rm_http(request.client.host), reason="Not dispatch app code")
                     )
@@ -47,5 +52,13 @@ class AuthAppMiddleware(BaseHTTPMiddleware):
             create_log(
                 f'Auth app error: Add new banned IP but already banned{request.client.host}',
                 'info'
+            )
+            return Response(status_code=404)
+        except JSONDecodeError as e:
+            create_log(
+                f'Json error:', 'crit'
+            )
+            create_log(
+                e, 'crit'
             )
             return Response(status_code=404)
