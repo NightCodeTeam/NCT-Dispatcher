@@ -58,10 +58,24 @@ class HttpMakerAsync(Singleton):
         except aiohttp.ClientConnectorError as e:
             create_log(e, 'error')
         except aiohttp.ConnectionTimeoutError as e:
+            create_log('Connection error:', 'error')
             if res is not None:
                 create_log(await self.__get_response_data(res), 'error')
             create_log(e, 'error')
             await asyncio.sleep(60)
+        except aiohttp.ClientTimeoutError as e:
+            create_log('Timeout error:', 'error')
+            if res is not None:
+                create_log(await self.__get_response_data(res), 'error')
+            create_log(e, 'error')
+            await asyncio.sleep(60)
+        except aiohttp.ClientError as e:
+            create_log('Client error:', 'crit')
+            if res is not None:
+                create_log(await self.__get_response_data(res), 'error')
+            create_log(e, 'error')
+            await asyncio.sleep(60)
+
         except AttributeError as e:
             create_log(e, 'crit')
 
