@@ -1,3 +1,5 @@
+import asyncio
+
 import aiohttp
 from .requests_dataclasses import ResponseData, Method, AllowedMethods
 from .makers_exceptions import RequestMethodNotFoundException
@@ -54,6 +56,11 @@ class HttpMakerAsync(Singleton):
             #        raise RequestMethodNotFoundException(method)
         except aiohttp.ClientConnectorError as e:
             create_log(e, 'error')
+        except aiohttp.ConnectionTimeoutError as e:
+            if res is not None:
+                create_log(await self.__get_response_data(res), 'error')
+            create_log(e, 'error')
+            await asyncio.sleep(60)
         except AttributeError as e:
             create_log(e, 'crit')
 

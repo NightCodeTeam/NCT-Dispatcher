@@ -29,3 +29,7 @@ class BotCallbacks:
     SELECT_APP = "app_"
     SELECT_APP_INCIDENTS = 'app_incedents_'
     DEL_APP = "del_app_"
+
+    ALL_BANS = "bans"
+    SELECT_BAN = "ban_"
+    DELETE_BAN = "del_ban_"

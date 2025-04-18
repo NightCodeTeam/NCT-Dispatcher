@@ -1,6 +1,5 @@
-from operator import eq
-from re import L
-from database.models import Incident, App
+from database.models import Incident, App, BannedIP
+from core.replacers import rm_http
 
 from .bot_dataclasses import BotMessage, BotInlineKeyboardLine, BotReplyMarkup
 from .reply_markup import incident_markup
@@ -267,4 +266,46 @@ class BotNewAppMessage(BotAdminChat):
     def __init__(self, name, url, code):
         super().__init__(
             text=f'Создано новое приложение\nНазвание: {name}\nURL: не отображается\nКод доступа: `{code}`',
+        )
+
+
+class BotShowBans(BotAdminChat):
+    def __init__(self, message_id: int, bans: list[BannedIP] | tuple[BannedIP]):
+        lines = [[
+            BotInlineKeyboardLine(
+                text=ban.ip,
+                callback_data=f'{BotCallbacks.SELECT_INCIDENT}{ban.id}'
+            )
+        ] for ban in bans]
+        lines.append([BotBackButton()])
+        super().__init__(
+            text=f'Список банов:',
+            message_id=message_id,
+            reply_markup=BotReplyMarkup(lines)
+        )
+
+
+class BotSelectedBan(BotAdminChat):
+    def __init__(self, message_id: int, ban: BannedIP):
+        super().__init__(
+            text=f'IP: {ban.ip}\nПричина: {ban.reason}',
+            message_id=message_id,
+            reply_markup=BotReplyMarkup([[
+                BotBackButton(),
+                BotInlineKeyboardLine(
+                    text='Удалить',
+                    callback_data=f'{BotCallbacks.DEL_APP}{ban.id}'
+                )
+            ], [BotBackButton()]])
+        )
+
+
+class BotBanDeleted(BotAdminChat):
+    def __init__(self, message_id: int, ban_ip: str):
+        super().__init__(
+            text=f"Ban {ban_ip} удален",
+            message_id=message_id,
+            reply_markup=BotReplyMarkup(
+                [[BotBackButton()]]
+            )
         )

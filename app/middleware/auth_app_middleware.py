@@ -1,13 +1,13 @@
 from typing_extensions import Callable
 from fastapi import Request, Response
-from sqlalchemy import select, and_
-from sqlalchemy.exc import IntegrityError
 from starlette.middleware.base import BaseHTTPMiddleware
+from sqlalchemy.exc import IntegrityError
 
 from core.debug import create_log
+from core.replacers import rm_http
 from database.session import new_session
-from database.models.app import App
-from database.models.banned_ip import BannedIP
+from database.models import App, BannedIP
+from database.utils import get_apps_from_db
 
 
 class AuthAppMiddleware(BaseHTTPMiddleware):
@@ -16,23 +16,31 @@ class AuthAppMiddleware(BaseHTTPMiddleware):
             async with new_session() as session:
                 if request.headers.get('dispatch') is not None \
                 and (await request.json()).get('app_name') is not None:
-                    app = (await session.execute(
-                        select(App).where(and_(
-                            App.name == (await request.json())['app_name'],
-                            App.dispatcher_code == request.headers.get('dispatch')
-                        ))
-                    )).scalar_one_or_none()
-                    if app is not None:
+                    app = await get_apps_from_db(
+                        f'apps.name = "{(await request.json())['app_name']}"\
+                         AND apps.dispatcher_code = "{request.headers.get('dispatch')}"'
+                    )
+                    #app = (await session.execute(
+                    #    select(App).where(and_(
+                    #        App.name == (await request.json())['app_name'],
+                    #        App.dispatcher_code == request.headers.get('dispatch')
+                    #    ))
+                    #)).scalar_one_or_none()
+                    if app[0] is not None:
+                        create_log(f'App: {app[0].name} got access', 'info')
                         return await call_next(request)
+                    create_log(f'Incorrect dispatch app name or code > {(await request.json())['app_name']}\
+                               {request.headers.get('dispatch')}')
                     session.add(
-                        BannedIP(ip = request.client.host, reason="Uncorrected dispatch app code")
+                        BannedIP(ip = rm_http(request.client.host), reason="Uncorrected dispatch app code")
                     )
                     await session.commit()
                 else:
+                    create_log(f"New ban > dispatch = {request.headers.get('dispatch')}\n\
+                    app = {(await request.json()).get('app_name')}", 'info')
                     session.add(
-                        BannedIP(ip = request.client.host, reason="Not dispatch app code")
+                        BannedIP(ip = rm_http(request.client.host), reason="Not dispatch app code")
                     )
-                    #create_log(request.client.host, 'info')
                     await session.commit()
                 return Response(status_code=404)
         except IntegrityError:

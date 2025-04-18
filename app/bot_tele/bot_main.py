@@ -81,5 +81,11 @@ class TeleBot:
                     await self.callbacks.select_app(update)
                 case BotCallbacks.DEL_APP:
                     await self.callbacks.del_app(update)
+                case BotCallbacks.ALL_BANS:
+                    await self.callbacks.bans(update)
+                case BotCallbacks.SELECT_BAN:
+                    await self.callbacks.select_ban(update)
+                case BotCallbacks.DELETE_BAN:
+                    await self.callbacks.del_ban(update)
                 case _:
                     create_log(f'Unknown callback command: {update.callback_query.data}', 'error')

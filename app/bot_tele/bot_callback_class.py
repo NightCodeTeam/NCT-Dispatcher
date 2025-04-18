@@ -1,5 +1,5 @@
 from core.debug import create_log
-from database.utils import get_incidents_from_db, get_apps_from_db
+from database.utils import get_incidents_from_db, get_apps_from_db, get_banned_ips_from_db
 from database.session import connect_session, get_session, new_session
 from .bot_dataclasses import UpdateCallback
 from .bot_requests import HttpTeleBot
@@ -17,6 +17,9 @@ from .bot_additional_classes import (
     BotSelectedApp,
     BotSelectedIncident,
     BotNewAppMessage,
+    BotBanDeleted,
+    BotShowBans,
+    BotSelectedBan,
 )
 
 #from text_messages import
@@ -177,9 +180,6 @@ class TeleBotCallbacks:
         if update.callback_query.data is None:
             raise BotCallbackDataNoneException(update)
 
-        app = get_apps_from_db(
-            f'apps.id={parse_bot_callback_id(update.callback_query.data)}'
-        )
         async with new_session() as session:
             app_id = parse_bot_callback_id(update.callback_query.data)
             if app_id is not None:
@@ -194,3 +194,44 @@ class TeleBotCallbacks:
             else:
                 create_log(f'Invalid incident ID: {app_id} : {update}', 'error')
                 await self.client.sent_msg(BotError(f'Невозможно удалить инцедент: не найден {app_id}'))
+
+    async def bans(self, update: UpdateCallback):
+        if update.callback_query.message is None:
+            raise BotMessageNoneException(update)
+        bans = await get_banned_ips_from_db(limit=90)
+        await self.client.edit_message_text(BotShowBans(
+            message_id=update.callback_query.message.message_id,
+            bans=bans
+        ))
+
+    async def select_ban(self, update: UpdateCallback):
+        if update.callback_query.message is None:
+            raise BotMessageNoneException(update)
+        if update.callback_query.data is None:
+            raise BotCallbackDataNoneException(update)
+        ban = await get_banned_ips_from_db(f'bannedips.id={parse_bot_callback_id(update.callback_query.data)}')
+        await self.client.edit_message_text(BotSelectedBan(
+            message_id=update.callback_query.message.message_id,
+            ban=ban[0]
+        ))
+
+    async def del_ban(self, update: UpdateCallback):
+        if update.callback_query.message is None:
+            raise BotMessageNoneException(update)
+        if update.callback_query.data is None:
+            raise BotCallbackDataNoneException(update)
+
+        async with new_session() as session:
+            ban_id = parse_bot_callback_id(update.callback_query.data)
+            if ban_id is not None:
+                ban = await get_apps_from_db(f'bannedips.id = {ban_id}', session=session)
+                ban = ban[0]
+                await session.delete(ban)
+                await session.commit()
+
+                await self.client.edit_message_text(
+                    BotBanDeleted(update.callback_query.message.message_id, ban.name)
+                )
+            else:
+                create_log(f'Invalid ban ID: {ban_id} : {update}', 'error')
+                await self.client.sent_msg(BotError(f'Невозможно удалить бан: не найден {ban_id}'))
