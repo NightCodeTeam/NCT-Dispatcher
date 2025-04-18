@@ -35,6 +35,7 @@ class HttpMakerAsync(Singleton):
             params: dict | None = None,
             headers: dict | None = None,
     ) -> ResponseData | None:
+        res = None
         try:
             async with aiohttp.ClientSession() as session:
                 match method.upper():

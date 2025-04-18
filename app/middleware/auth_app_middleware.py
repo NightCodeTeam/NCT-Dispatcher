@@ -1,4 +1,4 @@
-from json import JSONDecodeError
+import json
 
 from typing_extensions import Callable
 from fastapi import Request, Response
@@ -18,7 +18,7 @@ class AuthAppMiddleware(BaseHTTPMiddleware):
             async with new_session() as session:
                 if request.headers.get('dispatch') is not None \
                 and (await request.json()).get('app_name') is not None:
-                    app_name = (await request.json()).get('app_name')
+                    app_name = (json.loads(await request.body())).get('app_name')
                     code = request.headers.get('dispatch')
                     app = await get_apps_from_db(
                         f'apps.name = "{app_name}"\
@@ -40,7 +40,7 @@ class AuthAppMiddleware(BaseHTTPMiddleware):
                     )
                     await session.commit()
                 else:
-                    app_name = (await request.json()).get('app_name')
+                    app_name = (json.loads(await request.body())).get('app_name')
                     create_log(f"New ban > dispatch = {request.headers.get('dispatch')}\n\
                     app = {app_name}", 'info')
                     session.add(
@@ -54,7 +54,7 @@ class AuthAppMiddleware(BaseHTTPMiddleware):
                 'info'
             )
             return Response(status_code=404)
-        except JSONDecodeError as e:
+        except json.JSONDecodeError as e:
             create_log(
                 f'Json error:', 'crit'
             )
