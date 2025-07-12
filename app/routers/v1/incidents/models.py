@@ -10,3 +10,4 @@ class IncidentRequest(BaseModel):
     level: Level
 
     app_name: str
+    dispatcher_code: str

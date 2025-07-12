@@ -4,19 +4,18 @@ from threading import Thread
 from fastapi import FastAPI
 
 from bot_tele.bot_main import TeleBot
-from middleware import AuthAppMiddleware, UnbannedRequestMiddleware
-from routers.v1.endpoints import incidents
+from routers.v1 import incident_router
 from database.database import init_db
 
 from settings import settings
 
 
-app = FastAPI()
-app.include_router(incidents.router)
+app = FastAPI(title='NCT Dispatcher', docs_url=None, redoc_url=None, openapi_url=None)
+app.include_router(incident_router.router)
 
-if not settings.DEBUG:
-    app.add_middleware(UnbannedRequestMiddleware)
-    app.add_middleware(AuthAppMiddleware)
+#if not settings.DEBUG:
+#    app.add_middleware(UnbannedRequestMiddleware)
+#    app.add_middleware(AuthAppMiddleware)
 
 
 async def run_bot():
