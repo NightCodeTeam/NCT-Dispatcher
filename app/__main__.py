@@ -11,11 +11,7 @@ from settings import settings
 
 
 app = FastAPI(title='NCT Dispatcher', docs_url=None, redoc_url=None, openapi_url=None)
-app.include_router(incident_router.router)
-
-#if not settings.DEBUG:
-#    app.add_middleware(UnbannedRequestMiddleware)
-#    app.add_middleware(AuthAppMiddleware)
+app.include_router(incident_router)
 
 
 async def run_bot():
@@ -30,7 +26,7 @@ def generate_bot():
 if __name__ == "__main__":
     asyncio.run(init_db())
 
-    thread = Thread(target=generate_bot, name='bot')
+    thread = Thread(target=generate_bot, name='nct_dispatcher_bot')
     thread.daemon = True
     thread.start()
 

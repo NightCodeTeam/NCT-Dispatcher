@@ -2,8 +2,8 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
-from database.models.app import App
+from database.models import App
+from database.repo import DB
 
 from core.debug import create_log
 from database.session import get_session
@@ -12,17 +12,16 @@ from database.session import get_session
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 async def get_app(request: Request, session: SessionDep) -> App | None:
-    data = await request.json()
-    res = (await session.execute(
-        select(App).where(and_(
-            App.dispatcher_code == data.get('dispatcher_code'),
-            App.name == data.get('app_name')
-        ))
-    )).scalars().all()
-    if len(res) == 1:
-        create_log(f'New request received: app is {res[0].name}', 'info')
-        return res[0]
-    create_log(f'New request received: app not found', 'error')
+    res_json = await request.json()
+    app = await DB.apps.get_app_by_name_code(
+        name=res_json.get('app_name'),
+        code=res_json.get('dispatcher_code'),
+        session=session
+    )
+    if app:
+        return app
+    create_log(f'cant find app {res_json.get('app_name')}', 'error')
+    return None
 
 
 AppDep = Annotated[App | None, Depends(get_app)]

@@ -1,5 +1,6 @@
 from core.debug import create_log
 from database.utils import get_incidents_from_db, get_apps_from_db, get_banned_ips_from_db
+from database.repo import DB
 from database.session import new_session
 from .bot_dataclasses import UpdateCallback
 from .bot_requests import HttpTeleBot
@@ -19,8 +20,6 @@ from .bot_additional_classes import (
     BotShowBans,
     BotSelectedBan,
 )
-
-#from text_messages import
 
 
 class TeleBotCallbacks:
@@ -48,21 +47,19 @@ class TeleBotCallbacks:
         return wrapper
 
     async def back(self, update: UpdateCallback):
-        create_log(f'command_start > {update}', 'debug')
+        create_log(f'command_back > {update}', 'debug')
         if update.callback_query.message is None:
             raise BotMessageNoneException(update)
-        #create_log(f'>>> {update.callback_query.message.message_id}', 'info')
-        incedents = len(await get_incidents_from_db('incidents.status = "open"'))
+        incidents = len(await DB.incidents.only_open())
         await self.client.edit_message_text(
-            BotBackMessage(incedents, message_id=update.callback_query.message.message_id)
+            BotBackMessage(incidents, message_id=update.callback_query.message.message_id)
         )
 
-    # ! Инцеденты
+    # ! Инциденты
     async def all_incidents(self, update: UpdateCallback):
         if update.callback_query.message is None:
             raise BotMessageNoneException(update)
-        #create_log(f'>>> {update.callback_query.message.message_id}', 'info')
-        incidents = await get_incidents_from_db(limit=90)
+        incidents = await DB.incidents.all(limit=95)
         await self.client.edit_message_text(BotShowIncidents(
             message_id=update.callback_query.message.message_id,
             incidents=incidents
@@ -71,7 +68,7 @@ class TeleBotCallbacks:
     async def open_incidents(self, update: UpdateCallback):
         if update.callback_query.message is None:
             raise BotMessageNoneException(update)
-        incidents = await get_incidents_from_db('incidents.status = "open"', limit=90)
+        incidents = await DB.incidents.only_open(limit=80)
         await self.client.edit_message_text(BotShowIncidents(
             message_id=update.callback_query.message.message_id,
             incidents=incidents
@@ -82,13 +79,17 @@ class TeleBotCallbacks:
             raise BotMessageNoneException(update)
         if update.callback_query.data is None:
             raise BotCallbackDataNoneException(update)
-        incident = await get_incidents_from_db(f'incidents.id={parse_bot_callback_id(update.callback_query.data)}')
-        app = await get_apps_from_db(f'apps.id={incident[0].app_id}')
-        await self.client.edit_message_text(BotSelectedIncident(
-            message_id=update.callback_query.message.message_id,
-            app=app[0],
-            incident=incident[0]
-        ))
+        incident = await DB.incidents.get_incident_by_id(parse_bot_callback_id(update.callback_query.data))
+        if incident:
+            app = await DB.apps.get_app_by_id(incident.app_id)
+            if app:
+                return await self.client.edit_message_text(BotSelectedIncident(
+                    message_id=update.callback_query.message.message_id,
+                    app=app[0],
+                    incident=incident[0]
+                ))
+            return await self.client.sent_msg(BotError(f'Приложение не найдено {incident.app_id}'))
+        return await self.client.sent_msg(BotError(f'Инцидент не найден {parse_bot_callback_id(update.callback_query.data)}'))
 
     async def close_incident(self, update: UpdateCallback):
         create_log('close_incident >', 'debug')
@@ -99,7 +100,7 @@ class TeleBotCallbacks:
         async with new_session() as session:
             incident_id = parse_bot_callback_id(update.callback_query.data)
             if incident_id is not None:
-                incident = (await get_incidents_from_db(f'incidents.id = {incident_id}', session=session))[0]
+                incident = await DB.incidents.get_incident_by_id(incident_id, session)
                 incident.status = 'closed'
                 await session.commit()
 
@@ -110,7 +111,6 @@ class TeleBotCallbacks:
                 create_log(f'Invalid incident ID: {incident_id} : {update}', 'error')
                 await self.client.sent_msg(BotError(f'Невозможно закрыть инцедент: не найден {incident_id}'))
 
-
     async def del_incident(self, update: UpdateCallback):
         if update.callback_query.message is None:
             raise BotMessageNoneException(update)
@@ -119,22 +119,19 @@ class TeleBotCallbacks:
         async with new_session() as session:
             incident_id = parse_bot_callback_id(update.callback_query.data)
             if incident_id is not None:
-                incident = (await get_incidents_from_db(f'incidents.id = {incident_id}', session=session))[0]
-                await session.delete(incident)
-                await session.commit()
-
+                incident = await DB.incidents.delete_by_id(incident_id, session, True)
                 await self.client.edit_message_text(
                     BotIncidentDeleted(update.callback_query.message.message_id, incident.title)
                 )
             else:
                 create_log(f'Invalid incident ID: {incident_id} : {update}', 'error')
-                await self.client.sent_msg(BotError(f'Невозможно удалить инцедент: не найден {incident_id}'))
+                await self.client.sent_msg(BotError(f'Невозможно удалить инцидент: не найден {incident_id}'))
 
     # ! Приложения
     async def all_apps(self, update: UpdateCallback):
         if update.callback_query.message is None:
             raise BotMessageNoneException(update)
-        apps = await get_apps_from_db()
+        apps = await DB.apps.all()
         await self.client.edit_message_text(
             BotShowApps(
                 message_id=update.callback_query.message.message_id,
@@ -147,10 +144,10 @@ class TeleBotCallbacks:
             raise BotMessageNoneException(update)
         if update.callback_query.data is None:
             raise BotCallbackDataNoneException(update)
-        app = await get_apps_from_db(f'apps.id={parse_bot_callback_id(update.callback_query.data)}')
+        app = await DB.apps.get_app_by_id(parse_bot_callback_id(update.callback_query.data))
         await self.client.edit_message_text(BotSelectedApp(
             message_id=update.callback_query.message.message_id,
-            app=app[0]
+            app=app
         ))
 
     async def app_selected_incidents(self, update: UpdateCallback):
@@ -158,9 +155,7 @@ class TeleBotCallbacks:
             raise BotMessageNoneException(update)
         if update.callback_query.data is None:
             raise BotCallbackDataNoneException(update)
-        incidents = await get_incidents_from_db(
-            f'incidents.app_id={parse_bot_callback_id(update.callback_query.data)}'
-        )
+        incidents = await DB.incidents.get_by_app_id(parse_bot_callback_id(update.callback_query.data))
         await self.client.edit_message_text(BotShowIncidents(
             message_id=update.callback_query.message.message_id,
             incidents=incidents
@@ -181,13 +176,9 @@ class TeleBotCallbacks:
         async with new_session() as session:
             app_id = parse_bot_callback_id(update.callback_query.data)
             if app_id is not None:
-                app = await get_apps_from_db(f'apps.id = {app_id}', session=session)
-                app = app[0]
-                await session.delete(app)
-                await session.commit()
-
+                await DB.apps.delete_by_id(app_id, session, True)
                 await self.client.edit_message_text(
-                    BotAppDeleted(update.callback_query.message.message_id, app.name)
+                    BotAppDeleted(update.callback_query.message.message_id, str(app_id))
                 )
             else:
                 create_log(f'Invalid incident ID: {app_id} : {update}', 'error')
@@ -196,10 +187,9 @@ class TeleBotCallbacks:
     async def bans(self, update: UpdateCallback):
         if update.callback_query.message is None:
             raise BotMessageNoneException(update)
-        bans = await get_banned_ips_from_db(limit=90)
         await self.client.edit_message_text(BotShowBans(
             message_id=update.callback_query.message.message_id,
-            bans=bans
+            bans = await DB.banned_ips.all(limit=90)
         ))
 
     async def select_ban(self, update: UpdateCallback):
@@ -207,10 +197,9 @@ class TeleBotCallbacks:
             raise BotMessageNoneException(update)
         if update.callback_query.data is None:
             raise BotCallbackDataNoneException(update)
-        ban = await get_banned_ips_from_db(f'bannedips.id={parse_bot_callback_id(update.callback_query.data)}')
         await self.client.edit_message_text(BotSelectedBan(
             message_id=update.callback_query.message.message_id,
-            ban=ban[0]
+            ban=await DB.banned_ips.get_ip_by_ip(parse_bot_callback_id(update.callback_query.data))
         ))
 
     async def del_ban(self, update: UpdateCallback):

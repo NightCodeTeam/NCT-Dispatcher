@@ -2,16 +2,14 @@ from core.debug import create_log
 from core.code_gen import generate_dispatcher_code
 
 from database.session import new_session
-from database.utils import get_apps_from_db, get_incidents_from_db
-from database.models import App
+from database.repo import DB
 
 from .bot_requests import HttpTeleBot
 from .bot_dataclasses.updates_dataclasses import UpdateCallback, UpdateMessage
-from .bot_additional_classes import BotStartMessage, BotNewAppMessage
+from .bot_additional_classes import BotStartMessage, BotNewAppMessage, BotError
 
 from .bot_settings import BotCommands, BOT_PREFIX
 from settings import settings
-#from text_messages import
 
 
 class BaseBotCommands:
@@ -49,12 +47,14 @@ class TeleBotCommands(BaseBotCommands):
     def __init__(self, client: HttpTeleBot):
         super().__init__(client = client)
 
-    async def not_found(self, update: UpdateMessage):
-            create_log(f'command_not_found > {update}', 'info')
+    @staticmethod
+    async def not_found(update: UpdateMessage):
+        create_log(f'command_not_found > {update}', 'info')
 
+    @super().admin_chat
     async def start(self, update: UpdateMessage | UpdateCallback):
         create_log(f'command_start > {update}', 'debug')
-        incidents = len(await get_incidents_from_db('incidents.status = "open"'))
+        incidents = len(await DB.incidents.only_open())
         if type(update) is UpdateCallback:
             if update.callback_query.message is not None \
             and update.callback_query.message.message_id is not None:
@@ -67,32 +67,36 @@ class TeleBotCommands(BaseBotCommands):
                     incidents, message_id=update.message.message_id
                 ))
 
+    @super().admin_chat
     async def new_app(self, update: UpdateMessage):
         create_log(f'command_new_app > {update}', 'debug')
-        #if update.message is None and update.message.message_id is None \
-        #and update.message.text is None:
-        #    raise BotMessageNoneException(update)
+        try:
+            app_name, app_url = update.message.text.split('\n')
+            app_name = app_name.replace(f'{BOT_PREFIX}{BotCommands.NEW_APP} ', '')
 
-        app_name, app_url = update.message.text.split('\n')
-        app_name = app_name.replace(f'{BOT_PREFIX}{BotCommands.NEW_APP} ', '')
-
-        # ? Генерируем код доступа
-        dispatcher_codes = [app.dispatcher_code for app in await get_apps_from_db()]
-        code = generate_dispatcher_code()
-        while True:
-            if code not in dispatcher_codes:
-                break
-            else:
+            async with new_session() as session:
+                # ? Генерируем код доступа
+                dispatcher_codes = [app.dispatcher_code for app in await DB.apps.all(session=session)]
                 code = generate_dispatcher_code()
-
-        async with new_session() as session:
-            session.add(App(
-                name=app_name,
-                url=app_url,
-                dispatcher_code=code
-            ))
-            await session.commit()
-
-        await self.client.sent_msg(
-            BotNewAppMessage(name=app_name, url=app_url, code=code)
-        )
+                while True:
+                    if code not in dispatcher_codes:
+                        break
+                    else:
+                        code = generate_dispatcher_code()
+                await DB.apps.add_app(
+                    name=app_name,
+                    url='',
+                    dispatcher_code=code,
+                    session=session,
+                    commit=True
+                )
+                await self.client.sent_msg(
+                    BotNewAppMessage(name=app_name, url=app_url, code=code)
+                )
+        except ValueError:
+            create_log(f'Cant unpack app name, url: {update.message.text}')
+            await self.client.sent_msg(
+                BotError(
+                    'Не удалось распаковать name и url приложения'
+                )
+            )

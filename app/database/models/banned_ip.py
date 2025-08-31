@@ -1,12 +1,10 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer
+from sqlalchemy import String
 
 from ..database import Base
 
 
 class BannedIP(Base):
     __tablename__ = 'bannedips'
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    ip: Mapped[str]
+    ip: Mapped[str] = mapped_column(String, primary_key=True)
     reason: Mapped[str]

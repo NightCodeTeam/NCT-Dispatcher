@@ -12,5 +12,5 @@ class App(Base):
     id = mapped_column(Integer, primary_key=True)
     name: Mapped[str]
     url: Mapped[str]
-    dispatcher_code: Mapped[str]
-    incidents = relationship(Incident, back_populates='app')
+    dispatcher_code: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    incidents = relationship(Incident, back_populates='app', cascade='all, delete')

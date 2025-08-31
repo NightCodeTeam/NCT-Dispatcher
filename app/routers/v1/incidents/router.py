@@ -1,27 +1,23 @@
-from os import stat
-from fastapi import APIRouter, Request, Response, status
-from sqlalchemy import select
-from pydantic import BaseModel
+from fastapi import APIRouter, Response
 
 from core.debug import create_log
 from dependencies.dependencies import SessionDep, AppDep
-from database.models import App, Incident
+from database.models import Incident
+from database.repo import DB
 from bot_tele.bot_requests import HttpTeleBot
 from bot_tele.bot_additional_classes import BotNewIncidentMessage, BotError
 from .models import IncidentRequest
 
-from settings import settings
 
-
-router = APIRouter(prefix=settings.INCIDENTS_API_PATH)
+router = APIRouter(prefix='/incidents')
 bot = HttpTeleBot()
 
 
-@router.post('/post_incident')
+@router.post('/incident')
 async def post_incident(incident: IncidentRequest, app: AppDep, session: SessionDep):
     try:
-        create_log(f'> post incident: {incident}, {app}, {session}', 'debug')
-        if app is not None:
+        if app:
+            create_log(f'>new incident: {incident.title} - {app.name}', 'debug')
             new_incident = Incident(
                 title=incident.title,
                 message=incident.message,
@@ -29,8 +25,7 @@ async def post_incident(incident: IncidentRequest, app: AppDep, session: Session
                 level=incident.level,
                 app_id=app.id,
             )
-            session.add(new_incident)
-            await session.commit()
+            await DB.incidents.add(new_incident, session, True)
             return {'ok': await bot.sent_msg(
                 BotNewIncidentMessage(
                     app_name=app.name,
@@ -41,17 +36,16 @@ async def post_incident(incident: IncidentRequest, app: AppDep, session: Session
                     incident_id=new_incident.id
                 )
             )}
-        create_log(f'App error: {app} req app: {incident}', 'error')
+        create_log(f'App not found: {incident.app_name}', 'error')
         await bot.sent_msg(
             BotError(
-                error_message=f'Приложение не найдено:\n{incident}'
+                error_message=f'Новый инцидент, но приложение не найдено:\n{incident.title}\n{incident.message}'
             )
         )
         return Response(status_code=400)
     except Exception as e:
         BotError(
-            error_message=str(e)
+            error_message=f'Ошибка в диспатчере: {str(e)}'
         )
         await session.rollback()
         create_log(f'Error in post_incident, {e}', 'error')
-
