@@ -1,4 +1,5 @@
-from core.debug import create_log
+import logging
+
 from .database import new_session
 
 
@@ -13,7 +14,7 @@ def connect_session(method):
             try:
                 return await method(*args, session=session, **kwargs)
             except Exception as e:
-                create_log(e, 'crit')
+                logging.critical(e)
                 await session.rollback()
                 raise e
     return wrapper

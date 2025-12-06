@@ -1,1 +1,1 @@
-from .incidents import router as incident_router
+from .incidents import incidents_router_v1

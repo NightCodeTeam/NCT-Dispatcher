@@ -1,18 +1,39 @@
 import uvicorn
 import asyncio
 from threading import Thread
-from fastapi import FastAPI
 
-from bot_tele.bot_main import TeleBot
-from routers.v1 import incident_router
-from database.database import init_db
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.bot_tele.bot_main import TeleBot
+from app.routers import incidents_router_v1
+from app.database import init_db
 
 from settings import settings
 
 
-app = FastAPI(title='NCT Dispatcher', docs_url=None, redoc_url=None, openapi_url=None)
-app.include_router(incident_router)
+if settings.DEBUG:
+    app = FastAPI(
+        title='NCT Dispatcher',
+        version='0.2.0',
+    )
+else:
+    app = FastAPI(
+        title='NCT Dispatcher',
+        version='0.2.0',
+        docs_url=None,
+        redoc_url=None,
+        openapi_url=None
+    )
+app.include_router(incidents_router_v1)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[settings.FRONTEND_URL],
+    allow_credentials=True,
+    allow_methods=['GET', 'POST', 'DELETE'],
+    allow_headers=["*"],
+)
 
 async def run_bot():
     bot = TeleBot()
