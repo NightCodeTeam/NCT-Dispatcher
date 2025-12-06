@@ -1,0 +1,13 @@
+[project]
+name = "nct-dispatcher"
+version = "0.2.0"
+description = "NCT servises dispatcher for apps"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "aiohttp>=3.13.2",
+    "fastapi>=0.124.0",
+    "pydantic-settings>=2.12.0",
+    "sqlalchemy>=2.0.44",
+    "uvicorn>=0.38.0",
+]
