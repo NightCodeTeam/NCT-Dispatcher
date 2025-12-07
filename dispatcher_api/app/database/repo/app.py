@@ -1,11 +1,79 @@
-from typing import override
-
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.debug import logger
+from core.trash import generate_trash_string
 from database.models import App
 from .base import Repository
 
 
 class AppRepo(Repository):
     def __init__(self):
-        super().__init__(App)
+        super().__init__(App, ('incidents',))
+
+    async def exists(self, app_id: int, session: AsyncSession) -> bool:
+        return await self._exists(f"{self.table_name}.id={app_id}", session=session)
+
+    async def by_id(self, app_id: int, session: AsyncSession, load_relations: bool = True) -> App | None:
+        return await self.get(
+            f"{self.table_name}.id={app_id}",
+            session=session,
+            load_relations=load_relations
+        )
+
+    async def by_name(self, app_name: str, session: AsyncSession, load_relations: bool = True) -> App | None:
+        return await self.get(
+            f"{self.table_name}.name='{app_name}'",
+            session=session,
+            load_relations=load_relations
+        )
+
+    async def by_name_code(
+        self,
+        app_name: str,
+        code: str,
+        session: AsyncSession,
+        load_relations: bool = True
+    ) -> App | None:
+        return await self.get(
+            f"{self.table_name}.name='{app_name}' AND {self.table_name}.code='{code}'",
+            session=session,
+            load_relations=load_relations
+        )
+
+    async def codes(self, session: AsyncSession) -> tuple[str]:
+        return await session.execute(select(App.code))
+
+    async def new(
+        self,
+        name: str,
+        added_by_id: int,
+        status_url: str | None = None,
+        logs_folder: str | None = None,
+        session: AsyncSession | None = None,
+    ) -> bool:
+        for _ in range(5):
+            try:
+                return await self.add(App(
+                    name=name,
+                    code=generate_trash_string(20),
+                    status_url=status_url,
+                    logs_folder=logs_folder,
+                    added_by_id=added_by_id,
+                ), session=session)
+            except IntegrityError:
+                pass
+        logger.log(f'Cant add {name} -> IntegrityError', 'error')
+        return False
+
+    async def del_by_id(
+        self,
+        app_id: int,
+        session: AsyncSession,
+        commit: bool = True
+    ) -> bool:
+        app = await self.by_id(app_id=app_id, session=session)
+        if app:
+            return await self.delete(obj=app, session=session, commit=commit)
+        return False

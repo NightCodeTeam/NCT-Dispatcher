@@ -1,12 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import User
+from database.models import User
 from .base import Repository
 
 
 class UserRepo(Repository):
     def __init__(self):
-        super().__init__(User, ('key',))
+        super().__init__(User, ('apps', 'edited_incidents'))
 
     async def exists(self, username: str, session: AsyncSession) -> bool:
         return await self._exists(f"{self.table_name}.name='{username}'", session=session)

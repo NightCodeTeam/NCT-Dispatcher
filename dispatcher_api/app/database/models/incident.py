@@ -1,4 +1,5 @@
 from datetime import datetime
+from optparse import Option
 from typing import Literal
 
 from core.debug.debug_dataclass import Level
@@ -20,6 +21,9 @@ class Incident(Base):
 
     created_at: Mapped[datetime] = mapped_column(default=datetime.now())
     updated_at: Mapped[datetime] = mapped_column(default=datetime.now())
+
+    edit_by_id: Mapped[Option[int]] = mapped_column(ForeignKey('users.id'), nullable=True)
+    edit_by: Mapped[Option['User']] = relationship('User', back_populates='edited_incidents')
 
     app_id: Mapped[int] = mapped_column(ForeignKey('apps.id'))
     app = relationship('App', back_populates='incidents')

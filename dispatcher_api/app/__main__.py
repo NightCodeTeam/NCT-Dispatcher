@@ -20,7 +20,6 @@ async def lifespan(app: FastAPI):
     yield
 
 
-
 if settings.DEBUG:
     app = FastAPI(
         title='NCT Dispatcher',
