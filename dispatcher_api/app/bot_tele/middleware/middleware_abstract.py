@@ -1,4 +1,4 @@
-from core.debug import create_log
+import logging
 from abc import ABC, abstractmethod
 
 
@@ -9,7 +9,7 @@ class BotMiddleware(ABC):
             try:
                 return await func(*args, **kwargs)
             except KeyError as e:
-                create_log(f'{func.__name__} key error {e}', 'error')
+                logging.error(f'{func.__name__} key error {e}')
                 return False
         return wrapper
 

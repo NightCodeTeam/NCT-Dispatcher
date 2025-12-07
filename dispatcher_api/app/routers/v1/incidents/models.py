@@ -1,3 +1,4 @@
+from typing import List
 from pydantic import BaseModel
 
 from core.debug.debug_dataclass import Level
@@ -9,5 +10,15 @@ class IncidentRequest(BaseModel):
     logs: str
     level: Level
 
+
+class MultipleIncidentResponse(BaseModel):
+    incidents: List[IncidentResponse]
+
+
+class IncidentResponse(BaseModel):
+    title: str
+    message: str
+    logs: str
+    level: Level
+    status: str
     app_name: str
-    dispatcher_code: str

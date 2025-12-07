@@ -2,7 +2,7 @@ from typing import override
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import App
+from database.models import App
 from .base import Repository
 
 

@@ -1,18 +1,22 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    SQLALCHEMY_DATABASE_URL: str = "sqlite+aiosqlite:///dispatcher.sqlite3"
+    model_config = SettingsConfigDict(env_file='.env')
 
     # env
-    BOT_SLEEP: int | float
+    DEBUG: bool
+    HOST: str
+    PORT: int
+    DB_PATH: str
     TELEGRAM_BOT_TOKEN: str
     TELEGRAM_ADMIN_CHAT: int
-    FAST_API_HOST: str
-    FAST_API_PORT: int
-    DEBUG: bool
+    BOT_SLEEP: int
+    AUTH_SECRET_KEY: str
+    AUTH_ALGORITHM: str
+    AUTH_TOKEN_LIFETIME_IN_MIN: int
+    FRONTEND_URL: str
+    NCT_AUTH_URL: str
 
-    class ConfigDict:
-        env_file = ".env"
 
 settings = Settings()

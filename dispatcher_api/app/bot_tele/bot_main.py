@@ -1,6 +1,6 @@
 import asyncio
+import logging
 
-from core.debug import create_log
 from .bot_dataclasses import Update, UpdateMessage, UpdateCallback
 from .bot_requests import HttpTeleBot
 from .bot_callback_class import TeleBotCallbacks
@@ -26,7 +26,7 @@ class TeleBot:
                 # Асинхронно отдыхаем
                 await asyncio.sleep(BOT_SLEEP_TIME_IN_SEC)
         except asyncio.exceptions.CancelledError as e:
-            create_log(f'Stopping TeleBot > {e}', 'info')
+            logging.error(f'Stopping TeleBot > {e}', 'info')
 
     async def get_updates(self):
         # ! Главный метод отвечает за получение обновлений
@@ -88,4 +88,4 @@ class TeleBot:
                 case BotCallbacks.DELETE_BAN:
                     await self.callbacks.del_ban(update)
                 case _:
-                    create_log(f'Unknown callback command: {update.callback_query.data}', 'error')
+                    logging.error(f'Unknown callback command: {update.callback_query.data}', 'error')

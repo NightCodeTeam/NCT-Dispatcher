@@ -1,20 +1,16 @@
-import logging
+from typing import AsyncGenerator
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from core.debug import logger
 from .database import new_session
 
 
-async def get_session():
-    async with new_session() as session:
-        yield session
-
-
-def connect_session(method):
-    async def wrapper(*args, **kwargs):
+async def get_session() -> AsyncGenerator[AsyncSession]:
+    try:
         async with new_session() as session:
-            try:
-                return await method(*args, session=session, **kwargs)
-            except Exception as e:
-                logging.critical(e)
-                await session.rollback()
-                raise e
-    return wrapper
+            yield session
+    except Exception as e:
+        logger.log(e, 'crit')
+        await session.rollback()
+        raise e

@@ -5,6 +5,7 @@ venv
 .vs
 .vscode
 .idea
+.pytest_cache
 
 # Pyinstall
 *.manifest
@@ -18,7 +19,6 @@ test
 test.*
 Loot *
 settings.toml
-./data
 cache
 logs
 

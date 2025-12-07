@@ -8,7 +8,7 @@ from os.path import exists, join
 from .debug_dataclass import Level
 from ..single import Singleton
 
-from app.settings import settings
+from settings import settings
 
 
 class HasRepr(Protocol):

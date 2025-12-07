@@ -10,10 +10,10 @@ from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from app.core.debug import logger
-from app.database.models import User
-from app.database.repo import DB
-from app.settings import settings
+from core.debug import logger
+from database.models import User
+from database.repo import DB
+from settings import settings
 
 
 @dataclass(frozen=True, slots=True)

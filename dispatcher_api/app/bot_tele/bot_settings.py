@@ -1,10 +1,12 @@
 from typing import Final
-from core.dot_env import env_int
+
+from settings import settings
 
 
 BOT_MAX_UPDATES: Final = 100
 BOT_PREFIX: Final = '/'
-BOT_SLEEP_TIME_IN_SEC: Final = env_int('BOT_SLEEP')
+BOT_SLEEP_TIME_IN_SEC: Final = settings.BOT_SLEEP
+
 
 class BotCommands:
     HELP = "help"

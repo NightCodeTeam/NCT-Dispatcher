@@ -7,8 +7,15 @@ class Base(DeclarativeBase):
     pass
 
 
-engine = create_async_engine(settings.SQLALCHEMY_DATABASE_URL)
-new_session = async_sessionmaker(engine, expire_on_commit=False)
+engine = create_async_engine(
+    url=settings.DB_PATH,
+    echo=settings.DEBUG,
+    pool_pre_ping=True,
+)
+new_session = async_sessionmaker(
+    bind=engine,
+    expire_on_commit=False
+)
 
 
 async def init_db():

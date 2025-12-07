@@ -1,1 +1,0 @@
-from .incidents import router as incident_router

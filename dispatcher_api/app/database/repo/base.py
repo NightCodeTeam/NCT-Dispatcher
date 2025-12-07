@@ -5,8 +5,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.debug import logger
-from app.core.single import Singleton
+from core.debug import logger
+from core.single import Singleton
 from ..database import Base
 from ..session import new_session
 

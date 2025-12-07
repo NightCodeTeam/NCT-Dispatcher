@@ -1,11 +1,11 @@
+import logging
 from sqlite3 import IntegrityError
 from typing import override
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core import create_log
 from database.models.incident import Incident
-from .base_repo import Repository
+from .base import Repository
 
 
 class IncidentRepo(Repository):
@@ -68,7 +68,7 @@ class IncidentRepo(Repository):
                 app_id=app_id,
             ), session=session, commit=commit)
         except IntegrityError:
-            create_log(f'Cant insert {title} exists', 'error')
+            logging.error(f'Cant insert {title} exists')
             return False
 
     async def delete_by_id(self, incident_id: int, session: AsyncSession, commit: bool = False) -> bool:

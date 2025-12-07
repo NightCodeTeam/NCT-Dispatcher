@@ -1,4 +1,5 @@
-from core.debug import create_log
+import logging
+
 from .middleware_abstract import BotMiddleware
 
 
@@ -11,6 +12,6 @@ class BotMiddlewareMain:
         for middleware in self.middlewares:
             ans = await middleware.check(update)
             if not ans[0]:
-                create_log(f'Middleware {type(middleware).__name__} NOT ALLOWED')
+                logging.warning(f'Middleware {type(middleware).__name__} NOT ALLOWED')
                 return ans
         return True, None

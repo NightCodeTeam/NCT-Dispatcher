@@ -1,6 +1,5 @@
 import re
-
-from core.debug import create_log
+import logging
 
 from .bot_settings import BotCallbacks
 
@@ -12,7 +11,7 @@ def parse_bot_callback_id(callback_string: str) -> int | None:
             return None
         return int(ans.group(0))
     except ValueError:
-        create_log(f"Invalid callback: {callback_string}", 'error')
+        logging.error(f"Invalid callback: {callback_string}")
         return None
 
 
@@ -23,5 +22,5 @@ def parse_bot_callback_command(callback_string: str) -> str:
             return ''
         return ans.group(0)
     except ValueError:
-        create_log(f"Invalid callback: {callback_string}", 'error')
+        logging.error(f"Invalid callback: {callback_string}")
         return ''

@@ -1,6 +1,6 @@
-from core.debug import create_log
+import logging
+
 from core.requests_makers import HttpMakerAsync
-from core.dot_env import env_int
 from .bot_dataclasses import Update, BotMessage, BotReplyMarkup, BotInlineKeyboardLine
 from .bot_dataclasses.utility import get_update_dc
 from .middleware.middleware_main import BotMiddlewareMain
@@ -57,7 +57,7 @@ class HttpTeleBot(HttpMakerAsync):
         self.middleware.middlewares = middlewares
 
     async def get_updates(self) -> tuple[Update, ...]:
-        create_log(f'Bot > get updates {self.__last_update}')
+        logging.error(f'Bot > get updates {self.__last_update}')
         res = await self._make(
             url=f'/bot{self.token}/getUpdates',
             method='GET',
@@ -78,7 +78,7 @@ class HttpTeleBot(HttpMakerAsync):
                                 if update_dc is not None:
                                     ans.append(update_dc)
                             except KeyError as e:
-                                create_log(e, 'error')
+                                logging.error(e, 'error')
                         else:
                             await self.sent_msg(BotMessage(
                                 chat_id=env_int("TELEGRAM_ADMIN_CHAT"),
@@ -86,11 +86,11 @@ class HttpTeleBot(HttpMakerAsync):
                             ))
                         self.__last_update = update['update_id'] + 1
                     return tuple(ans)
-                create_log(f'Bot cant get updates: > res is not OK: {res.json}', 'error')
-            create_log('Bot cant get updates: > res is None', 'error')
+                logging.error(f'Bot cant get updates: > res is not OK: {res.json}', 'error')
+            logging.error('Bot cant get updates: > res is None', 'error')
             return ()
         except KeyError as e:
-            create_log(e, 'error')
+            logging.error(e, 'error')
             return ()
 
     @protect_text
@@ -103,7 +103,7 @@ class HttpTeleBot(HttpMakerAsync):
             )
         if res is not None and res.json['ok']:
             return True
-        create_log(f'Bot cant send message: > res is not OK: {res}', 'error')
+        logging.error(f'Bot cant send message: > res is not OK: {res}', 'error')
         return False
 
     @protect_text
@@ -116,7 +116,7 @@ class HttpTeleBot(HttpMakerAsync):
 
         if res is not None and res.json['ok']:
             return True
-        create_log(f'Bot cant edit msg text: > {res}', 'error')
+        logging.error(f'Bot cant edit msg text: > {res}', 'error')
         return False
 
     @protect_text
@@ -129,7 +129,7 @@ class HttpTeleBot(HttpMakerAsync):
 
         if res is not None and res.json['ok']:
             return True
-        create_log(f'Bot cant edit msg reply markup: > {res}', 'error')
+        logging.error(f'Bot cant edit msg reply markup: > {res}', 'error')
         return False
 
     async def get_chat(self, chat_id: int) -> dict | None:
