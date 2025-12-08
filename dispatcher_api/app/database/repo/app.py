@@ -31,13 +31,13 @@ class AppRepo(Repository):
 
     async def by_name_code(
         self,
-        app_name: str,
+        name: str,
         code: str,
         session: AsyncSession,
         load_relations: bool = True
     ) -> App | None:
         return await self.get(
-            f"{self.table_name}.name='{app_name}' AND {self.table_name}.code='{code}'",
+            f"{self.table_name}.name='{name}' AND {self.table_name}.code='{code}'",
             session=session,
             load_relations=load_relations
         )

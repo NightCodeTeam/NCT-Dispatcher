@@ -21,8 +21,8 @@ class HasStr(Protocol):
 
 
 class Logger(Singleton):
-    rotating: logging.Logger | None = None
-    error: logging.Logger | None = None
+    rotating_logger: logging.Logger | None = None
+    error_logger: logging.Logger | None = None
 
     def __init__(self, logs_dir: str = 'logs'):
         self.setup_folder(logs_dir)
@@ -40,17 +40,18 @@ class Logger(Singleton):
             mkdir(logs_folder)
 
     def setup_loggers(self, logs_dir: str):
-        self.error = logging.getLogger('error_logger')
-        self.error.setLevel(logging.ERROR)
+        self.error_logger = logging.getLogger('error_logger')
+        self.error_logger.setLevel(logging.ERROR)
         error_handler = logging.FileHandler(
             join(logs_dir, 'errors.log'),
             encoding='utf-8'
         )
         error_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
         #self.error.propagate = False
+        self.error_logger.addHandler(error_handler)
 
-        self.rotating = logging.getLogger('rotating_logger')
-        self.rotating.setLevel(logging.DEBUG)
+        self.rotating_logger = logging.getLogger('rotating_logger')
+        self.rotating_logger.setLevel(logging.DEBUG)
 
         rotating_handler = RotatingFileHandler(
             join(logs_dir, 'app.log'),
@@ -59,14 +60,14 @@ class Logger(Singleton):
             encoding='utf-8'
         )
         rotating_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
-        self.rotating.addHandler(rotating_handler)
+        self.rotating_logger.addHandler(rotating_handler)
 
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.DEBUG if settings.DEBUG else logging.INFO)
         console_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
-        self.rotating.addHandler(console_handler)
+        self.rotating_logger.addHandler(console_handler)
 
-        self.rotating.propagate = False
+        self.rotating_logger.propagate = False
 
     def log(self, message: Exception | str | HasStr | HasRepr, level: Level = 'debug', logger_name: str = '__all__'):
         log_exc = False
@@ -74,7 +75,7 @@ class Logger(Singleton):
             log_exc = True
 
         if logger_name == '__all__':
-            loggers = [self.rotating, self.error]
+            loggers = [self.rotating_logger, self.error_logger]
         else:
             loggers = [logging.getLogger(logger_name),]
         for logger in loggers:
@@ -99,3 +100,18 @@ class Logger(Singleton):
             self.log(f'{func.__name__} -> {res}')
             return res
         return wrapper
+
+    def debug(self, message: Exception | str | HasStr | HasRepr, logger_name: str = '__all__'):
+        self.log(message=message, level='debug', logger_name=logger_name)
+
+    def info(self, message: Exception | str | HasStr | HasRepr, logger_name: str = '__all__'):
+        self.log(message=message, level='info', logger_name=logger_name)
+
+    def warning(self, message: Exception | str | HasStr | HasRepr, logger_name: str = '__all__'):
+        self.log(message=message, level='warning', logger_name=logger_name)
+
+    def error(self, message: Exception | str | HasStr | HasRepr, logger_name: str = '__all__'):
+        self.log(message=message, level='error', logger_name=logger_name)
+
+    def critical(self, message: Exception | str | HasStr | HasRepr, logger_name: str = '__all__'):
+        self.log(message=message, level='crit', logger_name=logger_name)

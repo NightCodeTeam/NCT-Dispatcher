@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Literal
 from pydantic import BaseModel
 
 from core.debug.debug_dataclass import Level
@@ -9,6 +9,10 @@ class IncidentRequest(BaseModel):
     message: str
     logs: str
     level: Level
+
+
+class NewStatusRequest(BaseModel):
+    new_status: Literal['open', 'close']
 
 
 class MultipleIncidentResponse(BaseModel):

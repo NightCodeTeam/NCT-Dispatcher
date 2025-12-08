@@ -39,14 +39,6 @@ app.include_router(incidents_router_v1)
 app.include_router(apps_router_v1)
 app.include_router(auth_router_v1)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[settings.FRONTEND_URL],
-    allow_credentials=True,
-    allow_methods=['GET', 'POST', 'DELETE'],
-    allow_headers=["*"],
-)
-
 async def run_bot():
     bot = TeleBot()
     await bot.run()
@@ -57,7 +49,6 @@ def generate_bot():
 
 
 if __name__ == "__main__":
-
     logger.log('Init bot', 'info')
     #thread = Thread(target=generate_bot, name='nct_dispatcher_bot')
     #thread.daemon = True

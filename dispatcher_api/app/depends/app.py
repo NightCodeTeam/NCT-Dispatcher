@@ -8,13 +8,15 @@ from database.models import App
 from .session import SessionDep
 
 
-async def get_app(session: SessionDep, app_name: str = Body(embed=True), code: str = Body(embed=True)) -> App:
+async def get_app(session: SessionDep, app_name: str = Body(), code: str = Body()) -> App:
     app = await DB.apps.by_name_code(
         name=app_name,
         code=code,
         session=session
     )
-    if app:
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>', app)
+    print(await DB.apps.all(session=session))
+    if app is not None:
         return app
     logger.error(f'Cant find app: {app_name} - {code}')
     raise HTTPException(

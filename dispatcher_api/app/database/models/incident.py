@@ -1,6 +1,5 @@
 from datetime import datetime
-from optparse import Option
-from typing import Literal
+from typing import Literal, Optional
 
 from core.debug.debug_dataclass import Level
 from sqlalchemy.orm import relationship, Mapped, mapped_column
@@ -22,8 +21,8 @@ class Incident(Base):
     created_at: Mapped[datetime] = mapped_column(default=datetime.now())
     updated_at: Mapped[datetime] = mapped_column(default=datetime.now())
 
-    edit_by_id: Mapped[Option[int]] = mapped_column(ForeignKey('users.id'), nullable=True)
-    edit_by: Mapped[Option['User']] = relationship('User', back_populates='edited_incidents')
+    edit_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey('users.id'), nullable=True)
+    edit_by: Mapped[Optional['User']] = relationship('User', back_populates='edited_incidents')
 
     app_id: Mapped[int] = mapped_column(ForeignKey('apps.id'))
     app = relationship('App', back_populates='incidents')

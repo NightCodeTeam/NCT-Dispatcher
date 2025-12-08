@@ -19,15 +19,14 @@ class IncidentRepo(Repository):
         return await self.some(f'{self.table_name}.app_id={app_id}', session=session)
 
     async def new(
-            self,
-            title: str,
-            message: str,
-            logs: str,
-            level: str,
-            status: str,
-            app_id: int,
-            session: AsyncSession,
-            commit: bool = False
+        self,
+        title: str,
+        message: str,
+        logs: str,
+        level: str,
+        app_id: int,
+        session: AsyncSession,
+        commit: bool = True
     ) -> bool:
         try:
             return await self.add(Incident(
@@ -35,14 +34,13 @@ class IncidentRepo(Repository):
                 message=message,
                 logs=logs,
                 level=level,
-                status=status,
                 app_id=app_id,
             ), session=session, commit=commit)
         except IntegrityError:
             logging.error(f'Cant insert {title} exists')
             return False
 
-    async def delete_by_id(self, incident_id: int, session: AsyncSession, commit: bool = False) -> bool:
+    async def del_by_id(self, incident_id: int, session: AsyncSession, commit: bool = False) -> bool:
         data = await self.by_id(incident_id, session)
         if data:
             return await self.delete(data, session, commit)
