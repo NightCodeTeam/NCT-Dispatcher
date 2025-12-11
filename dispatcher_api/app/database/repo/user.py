@@ -13,12 +13,12 @@ class UserRepo(Repository):
 
     async def by_name(
         self,
-        username: str,
+        name: str,
         session: AsyncSession,
         load_relations: bool = False
     ) -> User | None:
         return await super().get(
-            f"{self.table_name}.name='{username}'",
+            f"{self.table_name}.name='{name}'",
             session=session,
             load_relations=load_relations
         )

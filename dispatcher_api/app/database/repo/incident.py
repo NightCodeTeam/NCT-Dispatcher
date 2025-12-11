@@ -49,7 +49,7 @@ class IncidentRepo(Repository):
     async def update_status(
         self,
         incident_id: int,
-        new_status: Literal['open', 'close'],
+        new_status: Literal['open', 'closed'],
         session: AsyncSession,
         commit: bool = False
     ) -> bool:
@@ -64,5 +64,5 @@ class IncidentRepo(Repository):
     async def only_open(self, limit: int | None = None, session: AsyncSession | None = None):
         return await self.some(f"{self.table_name}.status='open'", limit=limit, session=session)
 
-    async def only_close(self, limit: int | None = None, session: AsyncSession | None = None):
-        return await self.some(f"{self.table_name}.status='close'", limit=limit, session=session)
+    async def only_closed(self, limit: int | None = None, session: AsyncSession | None = None):
+        return await self.some(f"{self.table_name}.status='closed'", limit=limit, session=session)

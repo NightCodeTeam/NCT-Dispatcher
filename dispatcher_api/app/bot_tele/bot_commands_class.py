@@ -1,13 +1,8 @@
 import  logging
-from core.code_gen import generate_dispatcher_code
-
-from database.session import new_session
-from database.repo import DB
 
 from .bot_requests import HttpTeleBot
 from .bot_dataclasses.updates_dataclasses import UpdateCallback, UpdateMessage
 
-from .bot_settings import BotCommands, BOT_PREFIX
 from settings import settings
 
 

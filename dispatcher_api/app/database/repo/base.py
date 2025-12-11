@@ -81,25 +81,18 @@ class Repository(ABC, Singleton):
     async def add(
         self,
         model: T,
-        session: AsyncSession | None = None,
+        session: AsyncSession,
         commit: bool = False,
     ) -> bool:
-        if session is None:
-            async with new_session() as session:
-                return await self.__add(model, session, commit)
         return await self.__add(model, session, commit)
 
     @staticmethod
-    async def add_many(self,
+    async def add_many(
         objs: tuple[Type[T]] | list[Type[T]],
-        session: AsyncSession | None = None,
+        session: AsyncSession,
         commit: bool = False
     ) -> None:
-        if session is None:
-            async with new_session() as session:
-                session.add_all(objs)
-        else:
-            session.add_all(objs)
+        session.add_all(objs)
         if commit:
             await session.commit()
 
@@ -125,14 +118,15 @@ class Repository(ABC, Singleton):
 
     async def all(
         self,
+        session: AsyncSession,
         limit: int | None = None,
-        session: AsyncSession | None = None,
         load_relations: bool = True,
     ) -> tuple[T, ...]:
-        if session is None:
-            async with new_session() as session:
-                return await self.__get_object_from_db(limit=limit, session=session, load_relations=load_relations)
-        return await self.__get_object_from_db(limit=limit, session=session, load_relations=load_relations)
+        return await self.__get_object_from_db(
+            limit=limit,
+            session=session,
+            load_relations=load_relations
+        )
 
     async def clear_table(self, session: AsyncSession | None = None, commit: bool = False) -> bool:
         if session is None:

@@ -22,9 +22,9 @@ class AppRepo(Repository):
             load_relations=load_relations
         )
 
-    async def by_name(self, app_name: str, session: AsyncSession, load_relations: bool = True) -> App | None:
+    async def by_name(self, name: str, session: AsyncSession, load_relations: bool = True) -> App | None:
         return await self.get(
-            f"{self.table_name}.name='{app_name}'",
+            f"{self.table_name}.name='{name}'",
             session=session,
             load_relations=load_relations
         )
@@ -42,30 +42,26 @@ class AppRepo(Repository):
             load_relations=load_relations
         )
 
-    async def codes(self, session: AsyncSession) -> tuple[str]:
-        return await session.execute(select(App.code))
+    @staticmethod
+    async def codes(session: AsyncSession) -> tuple[str, ...]:
+        return tuple((await session.execute(select(App.code))).scalars().all())
 
     async def new(
         self,
+        session: AsyncSession,
         name: str,
         added_by_id: int,
         status_url: str | None = None,
         logs_folder: str | None = None,
-        session: AsyncSession | None = None,
+        commit: bool = True
     ) -> bool:
-        for _ in range(5):
-            try:
-                return await self.add(App(
-                    name=name,
-                    code=generate_trash_string(20),
-                    status_url=status_url,
-                    logs_folder=logs_folder,
-                    added_by_id=added_by_id,
-                ), session=session)
-            except IntegrityError:
-                pass
-        logger.log(f'Cant add {name} -> IntegrityError', 'error')
-        return False
+        return await self.add(App(
+            name=name,
+            code=generate_trash_string(20),
+            status_url=status_url,
+            logs_folder=logs_folder,
+            added_by_id=added_by_id,
+        ), session=session, commit=commit)
 
     async def del_by_id(
         self,

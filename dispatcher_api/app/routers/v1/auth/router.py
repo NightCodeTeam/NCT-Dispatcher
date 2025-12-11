@@ -30,3 +30,18 @@ async def login(user_data: UserLogin, session: SessionDep):
         }),
         "token_type": "bearer"
     }
+
+
+@auth_router_v1.post('/test', response_model=Token | Ok)
+async def test(session: SessionDep):
+
+    print('aLll good')
+    return {'ok': await DB.incidents.new(
+        title='test',
+        message='test',
+        logs='-',
+        level='debug',
+        app_id=1,
+        session=session,
+        commit=True
+    )}
