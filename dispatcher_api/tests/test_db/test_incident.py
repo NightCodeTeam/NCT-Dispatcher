@@ -2,35 +2,40 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import DB, Incident
+from app.database.repo.base import ItemNotFound
 
 
 async def test_all_empty(test_db: AsyncSession):
-    inc = await DB.incidents.all(session=test_db)
-    assert len(inc) == 0
+	await DB.incidents.clear_table(session=test_db)
+
+	inc = await DB.incidents.all(session=test_db)
+	assert len(inc) == 0
 
 
 async def test_new_all(test_db: AsyncSession):
-    ans = await DB.incidents.new(
-        title='Test Incident',
-        message='test message',
-        logs='log1\nlog2\nlog3',
-        level='error',
-        app_id=1,
-        session=test_db
-    )
-    assert ans is True
+	await DB.incidents.clear_table(session=test_db)
 
-    incidents = await DB.incidents.all(
-        session=test_db
-    )
-    assert len(incidents) == 1
-    assert incidents[0].title == 'Test Incident'
-    assert incidents[0].message == 'test message'
-    assert incidents[0].logs == 'log1\nlog2\nlog3'
-    assert incidents[0].level == 'error'
-    assert incidents[0].app_id == 1
+	ans = await DB.incidents.new(
+		title='Test Incident',
+		message='test message',
+		logs='log1\nlog2\nlog3',
+		level='error',
+		app_id=1,
+		session=test_db
+	)
+	assert ans is True
 
-    ans = await DB.incidents.del_by_id(
+	incidents = await DB.incidents.all(
+		session=test_db
+	)
+	assert len(incidents) == 1
+	assert incidents[0].title == 'Test Incident'
+	assert incidents[0].message == 'test message'
+	assert incidents[0].logs == 'log1\nlog2\nlog3'
+	assert incidents[0].level == 'error'
+	assert incidents[0].app_id == 1
+
+	ans = await DB.incidents.del_by_id(
 		incident_id=incidents[0].id,
 		session=test_db,
 		commit=True
@@ -38,30 +43,30 @@ async def test_new_all(test_db: AsyncSession):
 
 
 async def test_by_id(test_db: AsyncSession):
-    test = Incident(
-        id=2,
-        title='Test incident',
-        message='test message2',
-        logs='log4\nlog2\nlog3',
-        level='debug',
-        app_id=1,
-    )
-    test_db.add(test)
-    await test_db.commit()
+	test = Incident(
+		id=2,
+		title='Test incident',
+		message='test message2',
+		logs='log4\nlog2\nlog3',
+		level='debug',
+		app_id=1,
+	)
+	test_db.add(test)
+	await test_db.commit()
 
-    incident = await DB.incidents.by_id(
-        incident_id=2,
-        session=test_db,
-    )
-    assert incident is not None
-    assert incident.id == 2
-    assert incident.title == 'Test incident'
-    assert incident.message == 'test message2'
-    assert incident.logs == 'log4\nlog2\nlog3'
-    assert incident.level == 'debug'
-    assert incident.app_id == 1
+	incident = await DB.incidents.by_id(
+		incident_id=2,
+		session=test_db,
+	)
+	assert incident is not None
+	assert incident.id == 2
+	assert incident.title == 'Test incident'
+	assert incident.message == 'test message2'
+	assert incident.logs == 'log4\nlog2\nlog3'
+	assert incident.level == 'debug'
+	assert incident.app_id == 1
 
-    ans = await DB.incidents.del_by_id(
+	ans = await DB.incidents.del_by_id(
 		incident_id=2,
 		session=test_db,
 		commit=True
@@ -97,23 +102,25 @@ async def test_del_by_id(test_db: AsyncSession):
 
 
 async def test_del_by_id_wrong(test_db: AsyncSession):
-	ans = await DB.incidents.del_by_id(
-		incident_id=5678,
-		session=test_db,
-		commit=True
-	)
-
-	assert ans is False
+	try:
+		ans = await DB.incidents.del_by_id(
+			incident_id=5678,
+			session=test_db,
+			commit=True
+		)
+		assert False
+	except Exception as e:
+		assert type(e) is ItemNotFound
 
 
 async def test_update_status(test_db: AsyncSession):
 	test_db.add(Incident(
 		id=3,
 		title='Test Incident',
-        message='test message',
-        logs='log1\nlog2\nlog3',
-        level='error',
-        app_id=1,
+		message='test message',
+		logs='log1\nlog2\nlog3',
+		level='error',
+		app_id=1,
 	))
 	await test_db.commit()
 
@@ -140,22 +147,24 @@ async def test_update_status(test_db: AsyncSession):
 	)
 
 async def test_only_open_close(test_db: AsyncSession):
+	await DB.incidents.clear_table(session=test_db)
+
 	a = Incident(
 		id=4,
 		title='Test Incident',
-        message='test message',
-        logs='log1\nlog2\nlog3',
-        level='error',
-        app_id=1,
+		message='test message',
+		logs='log1\nlog2\nlog3',
+		level='error',
+		app_id=1,
 	)
 	b = Incident(
 		id=5,
 		title='Test Incident',
-        message='test message',
-        logs='log1\nlog2\nlog3',
-        level='error',
-        status='closed',
-        app_id=1,
+		message='test message',
+		logs='log1\nlog2\nlog3',
+		level='error',
+		status='closed',
+		app_id=1,
 	)
 	test_db.add(a)
 	test_db.add(b)

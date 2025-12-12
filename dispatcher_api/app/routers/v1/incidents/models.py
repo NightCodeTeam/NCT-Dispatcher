@@ -12,7 +12,7 @@ class IncidentRequest(BaseModel):
 
 
 class NewStatusRequest(BaseModel):
-    new_status: Literal['open', 'close']
+    new_status: Literal['open', 'closed']
 
 
 class MultipleIncidentResponse(BaseModel):

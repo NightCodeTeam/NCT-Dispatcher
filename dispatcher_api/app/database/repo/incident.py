@@ -6,14 +6,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.incident import Incident
 from .base import Repository
+from .base import ItemNotFound
 
 
 class IncidentRepo(Repository):
     def __init__(self):
         super().__init__(Incident, ('edit_by', 'app'))
 
-    async def by_id(self, incident_id: int, session: AsyncSession | None = None) -> Incident | None:
-        return await self.get(_filter=f'{self.table_name}.id={incident_id}', session=session)
+    async def by_id(self, incident_id: int, session: AsyncSession, load_relations: bool = True) -> Incident | None:
+        return await self.get(
+            _filter=f'{self.table_name}.id={incident_id}',
+            session=session,
+            load_relations=load_relations,
+        )
 
     async def by_app_id(self, app_id: int, session: AsyncSession | None = None) -> tuple[Incident, ...]:
         return await self.some(f'{self.table_name}.app_id={app_id}', session=session)
@@ -42,24 +47,24 @@ class IncidentRepo(Repository):
 
     async def del_by_id(self, incident_id: int, session: AsyncSession, commit: bool = False) -> bool:
         data = await self.by_id(incident_id, session)
-        if data:
-            return await self.delete(data, session, commit)
-        return False
+        if data is None:
+            raise ItemNotFound(Incident, 'id', incident_id)
+        return await self.delete(data, session, commit)
 
     async def update_status(
         self,
         incident_id: int,
         new_status: Literal['open', 'closed'],
         session: AsyncSession,
-        commit: bool = False
+        commit: bool = True
     ) -> bool:
         incident = await self.by_id(incident_id=incident_id, session=session)
-        if incident:
-            incident.status = new_status
-            if commit:
-                await session.commit()
-            return True
-        return False
+        if incident is None:
+            raise ItemNotFound(Incident, 'id', incident_id)
+        incident.status = new_status
+        if commit:
+            await session.commit()
+        return True
 
     async def only_open(self, limit: int | None = None, session: AsyncSession | None = None):
         return await self.some(f"{self.table_name}.status='open'", limit=limit, session=session)

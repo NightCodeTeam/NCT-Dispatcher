@@ -6,6 +6,7 @@ from core.debug import logger
 from core.trash import generate_trash_string
 from database.models import App
 from .base import Repository
+from .base import ItemNotFound
 
 
 class AppRepo(Repository):
@@ -70,6 +71,6 @@ class AppRepo(Repository):
         commit: bool = True
     ) -> bool:
         app = await self.by_id(app_id=app_id, session=session)
-        if app:
-            return await self.delete(obj=app, session=session, commit=commit)
-        return False
+        if app is None:
+            raise ItemNotFound(App, 'id', app_id)
+        return await self.delete(obj=app, session=session, commit=commit)

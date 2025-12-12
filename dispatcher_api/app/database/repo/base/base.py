@@ -7,11 +7,9 @@ from sqlalchemy.orm import selectinload
 
 from core.debug import logger
 from core.single import Singleton
-from ..database import Base
-from ..session import new_session
+from database.session import new_session
 
-
-T = TypeVar('T', bound=Base)
+from .classes import T
 
 
 class Repository(ABC, Singleton):

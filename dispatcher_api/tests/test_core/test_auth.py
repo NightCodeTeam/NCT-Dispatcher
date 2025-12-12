@@ -85,6 +85,7 @@ def test_create_token_with_default_expiration():
         )
         assert datetime.fromtimestamp(decoded["exp"]) == expected_exp
 
+
 def test_create_token_with_custom_expiration():
     test_data = {"user_id": 456}
     custom_delta = timedelta(hours=2)

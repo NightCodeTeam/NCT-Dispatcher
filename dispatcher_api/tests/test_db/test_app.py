@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import DB
+from app.database.repo.base import ItemNotFound
 
 
 async def test_base_app(test_db: AsyncSession):
@@ -38,7 +39,7 @@ async def test_by_id(test_db: AsyncSession):
     assert app.code == 'test_code_123'
     assert app.added_by_id == 1
     assert app.status_url == '-'
-    assert app.logs_folder == '-'
+    assert app.logs_folder == './logs'
 
 
 async def test_by_id_not_existed(test_db: AsyncSession):
@@ -59,7 +60,7 @@ async def test_by_name(test_db: AsyncSession):
     assert app.code == 'test_code_123'
     assert app.added_by_id == 1
     assert app.status_url == '-'
-    assert app.logs_folder == '-'
+    assert app.logs_folder == './logs'
 
 
 async def test_by_name_not_existed(test_db: AsyncSession):
@@ -79,7 +80,7 @@ async def test_by_name_code(test_db: AsyncSession):
     assert app is not None
     assert app.added_by_id == 1
     assert app.status_url == '-'
-    assert app.logs_folder == '-'
+    assert app.logs_folder == './logs'
 
 
 async def test_by_name_code_not_existed(test_db: AsyncSession):
@@ -141,5 +142,8 @@ async def test_del_by_id(test_db: AsyncSession):
 
 
 async def test_del_by_id_wrong(test_db: AsyncSession):
-    ans = await DB.apps.del_by_id(app_id=12345, session=test_db)
-    assert ans is False
+    try:
+        ans = await DB.apps.del_by_id(app_id=12345, session=test_db)
+        assert False
+    except Exception as e:
+        assert type(e) is ItemNotFound

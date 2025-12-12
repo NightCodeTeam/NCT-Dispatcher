@@ -21,5 +21,14 @@ class AppResponse(BaseModel):
     incidents: List[IncidentResponse]
 
 
+class AppLogFileResponse(BaseModel):
+    title: str
+    log: str
+
+
+class AppMultipleLogFilesResponse(BaseModel):
+    logs: List[AppLogFileResponse]
+
+
 class MultipleAppsResponse(BaseModel):
-    apps: List[IncidentResponse]
+    apps: List[AppResponse]
