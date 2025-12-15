@@ -1,17 +1,22 @@
 from fastapi import APIRouter, HTTPException
 
 from core.debug import logger
+from core.telegrambot import TeleBot, BotMessage
 from database.repo.base import ItemNotFound
 from depends import SessionDep, AppDep, TokenDep, PaginationParams
 from database import DB
 from routers.misc_models import Ok
-from bot_tele.bot_requests import HttpTeleBot
+from settings import settings
 from .models import IncidentRequest, MultipleIncidentResponse, IncidentResponse
 from .models import NewStatusRequest
 
 
 incidents_router_v1 = APIRouter(prefix='/v1/incidents', tags=['incidents'])
-bot = HttpTeleBot()
+bot = TeleBot(
+    token=settings.TELEGRAM_BOT_TOKEN,
+    commands={},
+    callbacks={},
+)
 
 
 @incidents_router_v1.get('/', response_model=MultipleIncidentResponse)
@@ -44,6 +49,11 @@ async def all_incidents(session: SessionDep, pagination: PaginationParams, token
 
 @incidents_router_v1.post('/new', response_model=Ok)
 async def post_incident(incident: IncidentRequest, app: AppDep, session: SessionDep):
+    if not settings.DEBUG:
+        await bot.client.sent_msg(BotMessage(
+            chat_id=settings.TELEGRAM_CHAT_ID,
+            text=f'Новый инцидент: {incident.title} ({app.name})\n{incident.message}'
+        ))
     return {'ok': await DB.incidents.new(
         title=incident.title,
         message=incident.message,

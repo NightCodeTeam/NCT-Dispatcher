@@ -3,14 +3,11 @@ import logging
 
 import aiohttp
 
-from core.single import Singleton
 from .response import ResponseData, Method
+from .exceptions import OutOfTries
 
 
-class HttpMakerAsync(Singleton):
-    """
-
-    """
+class HttpMakerAsync:
     def __init__(
         self,
         base_url: str = '',
@@ -42,9 +39,6 @@ class HttpMakerAsync(Singleton):
         headers: dict | None = None,
         try_wait_if_error: bool = True,
     ) -> ResponseData | None:
-        logging.debug(
-            f'{self.__class__.__name__} {method} -> {path} ? {params}',
-        )
         for _ in range(self._tries_to_reconnect):
             try:
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self._timeout)) as session:
@@ -96,6 +90,7 @@ class HttpMakerAsync(Singleton):
                 logging.critical(f'{self.__class__.__name__} > Uncaught error: {e}')
                 return None
         logging.critical(f'{self.__class__.__name__} > Tries out but no return')
+        raise OutOfTries(path)
 
     async def _make(
         self,
@@ -107,8 +102,8 @@ class HttpMakerAsync(Singleton):
         headers: dict | None = None,
         try_wait_if_error: bool = True,
     ) -> ResponseData | None:
-        logging.debug(f'{self.__class__.__name__} > make -> {self.get_full_path(url)}\n')
-        res = await self.__execute(
+        logging.debug(f'{self.__class__.__name__} > make')
+        return await self.__execute(
             path=url,
             method=method,
             data=data,
@@ -117,7 +112,6 @@ class HttpMakerAsync(Singleton):
             headers=headers,
             try_wait_if_error=try_wait_if_error,
         )
-        return res
 
     async def __get_response_data(
         self,
@@ -145,9 +139,6 @@ class HttpMakerAsync(Singleton):
                     logging.warning(f'{self.__class__.__name__} > unreadable content type: {content_type}')
                     return None
             return ResponseData(
-                url=str(response.url),
-                status=response.status,
-                headers=dict(response.headers),
                 json=data,
             )
         except aiohttp.ContentTypeError as e:

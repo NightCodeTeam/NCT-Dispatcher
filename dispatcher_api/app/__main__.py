@@ -7,7 +7,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.debug import logger
-from bot_tele.bot_main import TeleBot
 from routers import incidents_router_v1, apps_router_v1, auth_router_v1
 from database import init_db
 
@@ -47,20 +46,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-async def run_bot():
-    bot = TeleBot()
-    await bot.run()
-
-
-def generate_bot():
-    asyncio.run(run_bot())
-
 
 if __name__ == "__main__":
-    logger.log('Init bot', 'info')
-    #thread = Thread(target=generate_bot, name='nct_dispatcher_bot')
-    #thread.daemon = True
-    #thread.start()
-
     logger.log('Init fastapi', 'info')
     uvicorn.run(app, host=settings.HOST, port=settings.PORT)

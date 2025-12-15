@@ -34,6 +34,9 @@ class Dispatcher:
             try:
                 for i in self.__loggers:
                     with open(i, 'r') as f:
+                        if logs != '':
+                            logs += '\n'
+                        logs += f'Logfile: {i}\n'
                         logs = '\n'.join(f.readlines()[-self.__max_logs_to_send:])
             except FileNotFoundError:
                 logs = 'Logs not found'

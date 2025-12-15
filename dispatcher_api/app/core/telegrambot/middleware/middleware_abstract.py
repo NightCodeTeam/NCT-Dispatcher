@@ -9,8 +9,8 @@ class BotMiddleware(ABC):
             try:
                 return await func(*args, **kwargs)
             except KeyError as e:
-                logging.error(f'{func.__name__} key error {e}')
-                return False
+                logging.log(40, f'{func.__name__} key error {e}', 'error')
+                return False, 'Exce'
         return wrapper
 
     @__key_check_decorator
@@ -19,6 +19,6 @@ class BotMiddleware(ABC):
         """Главный метод, если возвращает False значит запрос от телеграмма не достигает дальнейшей логики приложения.
         Выход:
         True / False - удовлетворяет ли запрос условиям
-        str / None - сообщение которое уйдет в логер например "Пользователь не прошел проверку"
+        str / None - сообщение, которое уйдет в логгер например "Пользователь не прошел проверку"
         """
         pass

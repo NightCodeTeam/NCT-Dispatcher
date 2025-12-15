@@ -1,5 +1,4 @@
 from .middleware_abstract import BotMiddleware
-from settings import settings
 
 
 class AdminChatMiddleware(BotMiddleware):

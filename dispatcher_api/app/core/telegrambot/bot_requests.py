@@ -1,29 +1,36 @@
 import logging
 
-from core.requests_makers import HttpMakerAsync
-from .bot_dataclasses import Update, BotMessage, BotReplyMarkup, BotInlineKeyboardLine
+from .bot_dataclasses import Update, BotMessage
 from .bot_dataclasses.utility import get_update_dc
-from .middleware.middleware_main import BotMiddlewareMain
 from .middleware.middleware_abstract import BotMiddleware
-from .middleware.middleware_admin_chat import AdminChatMiddleware
+from core.requests_makers import HttpMakerAsync
 
-from .bot_settings import BOT_MAX_UPDATES
-from settings import settings
 
 class HttpTeleBot(HttpMakerAsync):
-    token = settings.TELEGRAM_BOT_TOKEN
-    # Middleware - это какая либо защита от атак на бота если её пропустили сервера телеграмм
-    middleware = BotMiddlewareMain((
-        AdminChatMiddleware(),
-        #UserBannedMiddleware(),
-        #ChatBannedMiddleware()
-    ))
-    __last_update = 0 # необходимо для работы по api
-
-    def __init__(self):
+    __last_update = 0 # необходимо для работы updates
+    def __init__(
+        self,
+        token: str,
+        middlewares: tuple | None = None,
+        max_updates_per_sync: int = 100,
+        tries_to_reconnect: int = 3,
+        timeout_in_sec: int = 10,
+    ):
         super().__init__(
-            base_url='https://api.telegram.org'
+            base_url=f'https://api.telegram.org/bot/{token}',
+            tries_to_reconnect=tries_to_reconnect,
+            timeout_in_sec=timeout_in_sec,
         )
+        self.max_updates_per_sync = max_updates_per_sync
+        if middlewares is None:
+            middlewares = tuple()
+        self.__middlewares = middlewares
+
+    @staticmethod
+    def __text_transfer(text: str) -> str:
+        for i in ('_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '\\', '-', '=', '|', '{', '}', '.', '!'):
+            text = text.replace(i, f'\\{i}')
+        return text
 
     @staticmethod
     def protect_text(func):
@@ -40,13 +47,13 @@ class HttpTeleBot(HttpMakerAsync):
             message = BotMessage(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=message.text.replace('.', '\\.'),
+                text=self.__text_transfer(message.text),
                 reply_to_message_id=message.reply_to_message_id,
                 reply_markup=message.reply_markup,
             )
 
             # Отправляем
-            return func(self, message=message)
+            return func(self, *args, **kwargs, message=message)
         return wrapper
 
     @staticmethod
@@ -54,16 +61,16 @@ class HttpTeleBot(HttpMakerAsync):
         return get_update_dc(update_dict)
 
     def _set_middlewares(self, middlewares: tuple[BotMiddleware, ...]):
-        self.middleware.middlewares = middlewares
+        self.__middlewares.middlewares = middlewares
 
     async def get_updates(self) -> tuple[Update, ...]:
-        logging.error(f'Bot > get updates {self.__last_update}')
+        logging.log(10, f'{self.__class__.__name__} > get updates from {self.__last_update}')
         res = await self._make(
-            url=f'/bot{self.token}/getUpdates',
+            url=f'/getUpdates',
             method='GET',
             params={
                 'offset': self.__last_update,
-                'limit': BOT_MAX_UPDATES
+                'limit': self.max_updates_per_sync
             }
         )
         try:
@@ -78,60 +85,53 @@ class HttpTeleBot(HttpMakerAsync):
                                 if update_dc is not None:
                                     ans.append(update_dc)
                             except KeyError as e:
-                                logging.error(e, 'error')
-                        else:
-                            await self.sent_msg(BotMessage(
-                                chat_id=env_int("TELEGRAM_ADMIN_CHAT"),
-                                text=msg if msg is not None else 'Error no message'
-                            ))
+                                logging.error(e)
                         self.__last_update = update['update_id'] + 1
                     return tuple(ans)
-                logging.error(f'Bot cant get updates: > res is not OK: {res.json}', 'error')
-            logging.error('Bot cant get updates: > res is None', 'error')
+                logging.warning(f'{self.__class__.__name__} > res is not OK: {res.json}')
+            logging.warning(f'{self.__class__.__name__} > res is None')
             return ()
         except KeyError as e:
-            logging.error(e, 'error')
+            logging.critical(e)
             return ()
 
     @protect_text
-    async def sent_msg(self, message: BotMessage, data: dict | None = None) -> bool:
+    async def sent_msg(self, message: BotMessage, adt_data: dict | None = None) -> bool:
+        data = message.to_dict
+        if adt_data is not None:
+            data.update(adt_data)
         res = await self._make(
-                url=f'/bot{self.token}/sendMessage',
+                url=f'/sendMessage',
                 method='GET',
-                params=message.to_dict,
                 data=data,
             )
-        if res is not None and res.json['ok']:
-            return True
-        logging.error(f'Bot cant send message: > res is not OK: {res}', 'error')
+        if res is not None:
+            return res.json.get('ok', False)
+        logging.error(f'{self.__class__.__name__} > cant send message: > res is not OK: {res}')
         return False
 
     @protect_text
     async def edit_message_text(self, message: BotMessage):
         res = await self._make(
-            url=f'/bot{self.token}/editMessageText',
+            url=f'/editMessageText',
             method='GET',
             data=message.to_dict,
         )
 
         if res is not None and res.json['ok']:
             return True
-        logging.error(f'Bot cant edit msg text: > {res}', 'error')
+        logging.error(f'Bot cant edit msg text: > {res}')
         return False
 
     @protect_text
     async def edit_message_reply_markup(self, message: BotMessage):
         res = await self._make(
-            url=f'/bot{self.token}/editMessageReplyMarkup',
+            url=f'/editMessageReplyMarkup',
             method='GET',
             data=message.to_dict,
         )
 
         if res is not None and res.json['ok']:
             return True
-        logging.error(f'Bot cant edit msg reply markup: > {res}', 'error')
+        logging.error(f'{self.__class__.__name__} > cant edit msg reply markup: > {res}')
         return False
-
-    async def get_chat(self, chat_id: int) -> dict | None:
-        res = await self._make(url=f'/bot{self.token}/getChat', method='GET', params={'chat_id': chat_id})
-        return res.json if res is not None else None

@@ -1,8 +1,6 @@
 import re
 import logging
 
-from .bot_settings import BotCallbacks
-
 
 def parse_bot_callback_id(callback_string: str) -> int | None:
     try:

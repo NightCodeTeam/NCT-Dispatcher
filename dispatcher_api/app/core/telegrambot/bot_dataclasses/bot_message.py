@@ -1,6 +1,7 @@
 import json
 from typing import Literal
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
+
 
 @dataclass(frozen=True, slots=True)
 class BotInlineKeyboardLine:
@@ -39,14 +40,16 @@ class BotMessage:
     message_id: int | None = None
     text: str = ''
     reply_to_message_id: int | None = None
+    message_thread_id: int | None = None
     reply_markup: BotReplyMarkup | None = None
 
-    parse_mode: Literal["HTML", "Markdown", "MarkdownV2"] | None = None
+    parse_mode: Literal["HTML", "Markdown", "MarkdownV2"] = 'MarkdownV2'
+    disable_web_page_preview: bool = True
 
     @property
     def to_dict(self) -> dict:
         params = {
-            "chat_id": self.chat_id,
+            "chat_id": str(self.chat_id),
             "text": self.text,
         }
         if self.message_id is not None:
@@ -57,4 +60,5 @@ class BotMessage:
             params["reply_markup"] = json.dumps(self.reply_markup.to_dict()) # asdict(self.reply_markup)
         if self.parse_mode is not None:
             params["parse_mode"] = self.parse_mode
+        params['disable_web_page_preview'] = self.disable_web_page_preview
         return params

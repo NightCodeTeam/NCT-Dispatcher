@@ -14,7 +14,7 @@ def get_chat_dc(update_part_with_chat: dict) -> Chat:
         username=update_part_with_chat.get('username', ''),
         first_name=update_part_with_chat.get('first_name', ''),
         last_name=update_part_with_chat.get('last_name', ''),
-        is_forum=update_part_with_chat.get('is_forum', ''),
+        is_forum=update_part_with_chat.get('is_forum', False),
     )
 
 

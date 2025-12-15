@@ -1,6 +1,6 @@
 # Night Code Team Dispatcher
 
-Это система для отслеживания и работой со сбоями, багами и ошибками в работе других сервисов. Проект был вдохновлен Netflix Dispatcher однако на данный момент функционал сильно ограничен в возможностях.
+Это система для отслеживания и работой со сбоями, багами и ошибками в работе других сервисов. Проект был вдохновлен Netflix Dispatcher однако на данный момент функционально уступает.
 
 ## v0.2.0
 
@@ -62,7 +62,7 @@ dispatcher = Dispatcher(
     app_name='MyApp',   # название приложения добавленного в dispatcher api
     dispatcher_code='123456',   # сгенерированный код этого приложения
     loggers_paths=['/var/absolute/path/to/logger1.txt', './path/to/logger2.txt'],   # пути к логам желательно указывать в абсолютном формате
-    max_logs_to_send=100    # сколько базого логов будет отправлено вместе с инцидентом, можно переопределить в запросе
+    max_logs_to_send=100    # сколько строк каждого лога будет отправлено вместе с инцидентом, можно переопределить в запросе
 )
 
 dispatcher.send(
@@ -80,17 +80,17 @@ dispatcher.send(
 
 1. Создайте приложение через web интерфейс
 2. Сохраните имя и сгенерированныйкод приложения
-3. Создайте запрос к URL dispatcher api и в json формате отправьте следующие параметры:
+3. Создайте запрос к URL dispatcher api и в json формате отправьте следующие:
 
 ```json
 {
-    incident: {
-        title: 'Error in user registration',
-        message: 'User registration failed',
-        level: 'error',
-        logs: 'log 1\nlog 2\nlog 3\nlog 4\nlog 5',
+    "incident": {
+        "title": "Error in user registration",
+        "message": "User registration failed",
+        "level": "error",
+        "logs": "log 1\nlog 2\nlog 3\nlog 4\nlog 5",
     },
-    app_name: 'your_app_name_here',
-    code: 'your_generated_code_here'
+    "app_name": "your_app_name_here",
+    "code": "your_generated_code_here",
 }
 ```

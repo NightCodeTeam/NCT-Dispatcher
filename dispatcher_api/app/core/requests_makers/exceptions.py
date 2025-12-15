@@ -1,7 +1,18 @@
-class RequestMakersExceptions(Exception):
-    pass
+import logging
 
 
-class RequestMethodNotFoundException(RequestMakersExceptions):
+class RequestsMakersException(Exception):
+    def __init__(self, txt):
+        self.txt = txt
+
+
+class OutOfTries(RequestsMakersException):
+    def __init__(self, url: str):
+        super().__init__(f'Out of tries to connect to {url}')
+
+
+class RequestMethodNotFoundException(RequestsMakersException):
     def __init__(self, method: str):
-        super().__init__(f'Request method not found: {method}')
+        txt = f'Request method not found: {method}'
+        logging.error(txt, 'error')
+        super().__init__(txt)

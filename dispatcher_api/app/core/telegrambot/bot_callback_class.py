@@ -1,4 +1,7 @@
+import logging
+from .bot_dataclasses import UpdateCallback
 from .bot_requests import HttpTeleBot
+
 
 
 class TeleBotCallbacks:
