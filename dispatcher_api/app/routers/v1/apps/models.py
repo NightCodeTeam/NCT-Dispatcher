@@ -3,32 +3,35 @@ from pydantic import BaseModel
 
 
 class NewAppRequest(BaseModel):
-    name: str
-    status_url: str | None = None
-    logs_folder: str | None = None
+	name: str
+	status_url: str | None = None
+	logs_folder: str | None = None
 
 
 class IncidentResponse(BaseModel):
-    title: str
-    msg: str
-    level: str
-    logs: str
+	title: str
+	message: str
+	level: str
+	logs: str
 
 
 class AppResponse(BaseModel):
-    name: str
-    status_url: str
-    incidents: List[IncidentResponse]
+	id: int
+	name: str
+	code: str
+	status_url: str
+	logs_folder: str | None = None
+	incidents: list[str]
 
 
 class AppLogFileResponse(BaseModel):
-    title: str
-    log: str
+	title: str
+	log: str
 
 
 class AppMultipleLogFilesResponse(BaseModel):
-    logs: List[AppLogFileResponse]
+	logs: List[AppLogFileResponse]
 
 
 class MultipleAppsResponse(BaseModel):
-    apps: List[AppResponse]
+	apps: List[AppResponse]

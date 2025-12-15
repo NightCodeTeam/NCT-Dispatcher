@@ -22,7 +22,14 @@ async def all_apps(session: SessionDep, pagination: PaginationParams, token: Tok
             session=session,
             load_relations=True,
         )
-    return {'apps': apps}
+    return {'apps': [{
+    	'id': i.id,
+    	'name': i.name,
+    	'code': i.code,
+    	'status_url': i.status_url,
+    	'logs_folder': i.logs_folder,
+    	'incidents': [j.title for j in i.incidents],
+    } for i in apps]}
 
 
 @apps_router_v1.post('/new', response_model=Ok)

@@ -1,8 +1,6 @@
-import PaginationTable from "../../components/utils/custom_tables.jsx";
 import incidents_service from "../../api/incidents.jsx";
 import {not_to_long_text} from "../../components/utils/string_line.jsx";
-
-
+import PaginationTable from "../../components/utils/custom_tables.jsx";
 
 
 function get_level(data) {
@@ -57,7 +55,6 @@ const IncHead = () => {
 
 const IncDetails = ({data, on_close, update}) => {
     const date = new Date(data.created_at);
-    console.log(data)
 
     const change_status = async () => {
         await incidents_service.update_incident(data.id, data.status === 'open' ? 'closed': 'open')
@@ -190,8 +187,8 @@ const IncLine = ({data, update, action_on_click}) => {
 
     return <tr>
         <td className='desktop' onClick={() => handle_click()} dangerouslySetInnerHTML={{__html: not_to_long_text(data.title, data.message, 150)}}></td>
-        <td className='mobile' onClick={() => handle_click(data)} dangerouslySetInnerHTML={{__html: not_to_long_text(data.title, data.message, 50)}}></td>
-        <td className='desktop' style={{textAlign: "center", width: '100px'}}>{data.app_name}</td>
+        <td className='mobile' onClick={() => handle_click()} dangerouslySetInnerHTML={{__html: not_to_long_text(data.title, data.message, 50)}}></td>
+        <td className='desktop' style={{textAlign: "center", width: '100px'}} onClick={() => handle_click()}>{data.app_name}</td>
         <td className='rounded_border desktop' style={{
             userSelect: 'none',
             textAlign: "center",
@@ -200,7 +197,7 @@ const IncLine = ({data, update, action_on_click}) => {
             borderColor: get_level(data).color,
             backgroundColor: get_level(data).background,
             fontWeight: 'bolder',
-        }}>{get_level(data).label}</td>
+        }} onClick={() => handle_click()}>{get_level(data).label}</td>
         <td className='mobile base_flex_column'>
             <span>{data.app_name}</span>
             <span style={{
@@ -211,7 +208,7 @@ const IncLine = ({data, update, action_on_click}) => {
                 borderColor: get_level(data).color,
                 backgroundColor: get_level(data).background,
                 fontWeight: 'bolder',
-            }} className='rounded_border'>{get_level(data).label}</span>
+            }} className='rounded_border' onClick={() => handle_click()}>{get_level(data).label}</span>
         </td>
         <td onClick={() => change_status()} style={{
             userSelect: 'none',
