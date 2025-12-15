@@ -127,6 +127,7 @@ async def test_update_status(test_db: AsyncSession):
 	ans = await DB.incidents.update_status(
 		incident_id=3,
 		new_status='closed',
+		updated_by_id=1,
 		session=test_db,
 	)
 

@@ -5,19 +5,18 @@ from .dispatcher_settings import Level
 
 
 class Dispatcher:
-
     def __init__(
         self,
         dispatcher_url: str,
-        dispatcher_code: str,
         app_name: str,
-        loggers: list[str] | None = None,
+        dispatcher_code: str,
+        loggers_paths: list[str] | None = None,
         max_logs_to_send: int = 10,
     ):
         self.__dispatcher_url = dispatcher_url
-        self.__dispatcher_code = dispatcher_code
+        self.__code = dispatcher_code
         self.__app_name = app_name
-        self.__loggers = loggers
+        self.__loggers = loggers_paths
         self.__max_logs_to_send = max_logs_to_send
 
     def send(
@@ -26,20 +25,29 @@ class Dispatcher:
         message: str,
         level: Level,
         logs: str | list[str] | tuple[str] | None = None,
+        max_logs_to_send: int = 10,
     ) -> bool:
-        if type(logs) is list or type(logs) is tuple:
+        if type(logs) in (list, tuple):
             logs='\n'.join(logs)
+        else:
+            logs = ''
+            try:
+                for i in self.__loggers:
+                    with open(i, 'r') as f:
+                        logs = '\n'.join(f.readlines()[-self.__max_logs_to_send:])
+            except FileNotFoundError:
+                logs = 'Logs not found'
         res = requests.post(
             self.__dispatcher_url,
             json={
-                'title': title,
-                'message': message,
-                'level': level,
-                'logs': logs,
+                'incident': {
+                    'title': title,
+                    'message': message,
+                    'logs': logs,
+                    'level': level,
+                },
                 'app_name': self.__app_name,
-            }, headers={
-                'Content-Type': 'application/json',
-                'dispatch': self.__dispatcher_code,
+                'code': self.__code,
             }
         )
         return True if res is not None and res.json()['ok'] == True else False

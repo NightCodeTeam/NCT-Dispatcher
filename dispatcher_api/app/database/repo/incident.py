@@ -64,7 +64,7 @@ class IncidentRepo(Repository):
         if incident is None:
             raise ItemNotFound(Incident, 'id', incident_id)
         incident.status = new_status
-        incident.edit_by_id = updated_by_id
+        incident.edit_by_id = int(updated_by_id)
         incident.updated_at = datetime.now()
         if commit:
             await session.commit()

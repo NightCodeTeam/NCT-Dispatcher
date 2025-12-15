@@ -61,12 +61,16 @@ async def incident_by_id(session: SessionDep, token: TokenDep, incident_id: int)
     if inc is None:
         raise HTTPException(status_code=404, detail=f'Incident {incident_id} not found')
     return {
+        'id': inc.id,
         'title': inc.title,
         'message': inc.message,
         'logs': inc.logs,
         'level': inc.level,
         'status': inc.status,
         'app_name': inc.app.name,
+        'created_at': inc.created_at,
+        'updated_at': inc.updated_at,
+        'edit_by_user': inc.edit_by.name if inc.edit_by is not None else None
     }
 
 
