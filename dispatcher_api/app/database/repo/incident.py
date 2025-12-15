@@ -1,7 +1,8 @@
 import logging
-from sqlite3 import IntegrityError
+from datetime import datetime
 from typing import Literal
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.incident import Incident
@@ -55,6 +56,7 @@ class IncidentRepo(Repository):
         self,
         incident_id: int,
         new_status: Literal['open', 'closed'],
+        updated_by_id: int,
         session: AsyncSession,
         commit: bool = True
     ) -> bool:
@@ -62,6 +64,8 @@ class IncidentRepo(Repository):
         if incident is None:
             raise ItemNotFound(Incident, 'id', incident_id)
         incident.status = new_status
+        incident.edit_by_id = updated_by_id
+        incident.updated_at = datetime.now()
         if commit:
             await session.commit()
         return True

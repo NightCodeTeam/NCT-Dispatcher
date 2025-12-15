@@ -23,6 +23,7 @@ async def all_incidents(session: SessionDep, pagination: PaginationParams, token
         incidents = await DB.incidents.pagination(
             skip=pagination.skip,
             limit=pagination.limit,
+            order_by_field='created_at',
             session=session,
             load_relations=True,
         )
@@ -35,6 +36,9 @@ async def all_incidents(session: SessionDep, pagination: PaginationParams, token
         'level': i.level,
         'status': i.status,
         'app_name': i.app.name,
+        'created_at': i.created_at,
+        'updated_at': i.updated_at,
+        'edit_by_user': i.edit_by.name if i.edit_by is not None else None
     } for i in incidents]}
 
 
@@ -89,6 +93,7 @@ async def update_status(
         return {'ok': await DB.incidents.update_status(
             incident_id=incident_id,
             new_status=status_req.new_status,
+            updated_by_id=token.user.id,
             session=session,
             commit=True,
         )}

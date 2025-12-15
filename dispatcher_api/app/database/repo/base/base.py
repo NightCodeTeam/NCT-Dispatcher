@@ -25,6 +25,7 @@ class Repository(ABC, Singleton):
         _filter: str | None = None,
         offset: int | None = None,
         limit: int | None = None,
+        order_by_field: str | None = None,
         session: AsyncSession | None = None,
         load_relations: bool = True,
     ) -> tuple[T]:
@@ -40,6 +41,8 @@ class Repository(ABC, Singleton):
             query = query.limit(limit)
         if offset:
             query = query.offset(offset)
+        if order_by_field:
+            query = query.order_by(text(order_by_field))
 
         if session is None:
             async with new_session() as session:
@@ -64,6 +67,7 @@ class Repository(ABC, Singleton):
         _filter: str,
         offset: int | None = None,
         limit: int | None = None,
+        order_by_field: str | None = None,
         session: AsyncSession | None = None,
         load_relations: bool = True,
     ) -> tuple[T, ...]:
@@ -71,6 +75,7 @@ class Repository(ABC, Singleton):
             _filter=_filter,
             offset=offset,
             limit=limit,
+            order_by_field=order_by_field,
             session=session,
             load_relations=load_relations
         )
@@ -166,6 +171,7 @@ class Repository(ABC, Singleton):
         _filter: str | None = None,
         skip: int | None = None,
         limit: int | None = None,
+        order_by_field: str | None = None,
         session: AsyncSession | None = None,
         load_relations: bool = False,
     ) -> tuple[T, ...]:
@@ -173,6 +179,7 @@ class Repository(ABC, Singleton):
             _filter=_filter,
             offset=skip,
             limit=limit,
+            order_by_field=order_by_field,
             session=session,
             load_relations=load_relations,
         )

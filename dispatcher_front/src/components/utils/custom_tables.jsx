@@ -6,6 +6,8 @@ import {LoadingAnimation} from "./loading_animation.jsx";
 
 const PaginationTable = ({CustomHead, Line, Detail, api_request, adt_style}) => {
     const [show_detail, set_show_detail] = useState(false);
+    const [detail_data, set_detail_data] = useState({});
+
     const [loading, set_loading] = useState(true);
 
     const [page, set_page] = useState(0);
@@ -13,12 +15,14 @@ const PaginationTable = ({CustomHead, Line, Detail, api_request, adt_style}) => 
 
     const [items, set_items] = useState([]);
 
-    const detail_data = () => {
+    const handle_detail_data = (data) => {
         set_show_detail(true)
+        set_detail_data(data)
     }
 
     const get_items = async () => {
         set_loading(true);
+        set_show_detail(false)
         set_items(await api_request(page*rows_per_page, rows_per_page));
         set_loading(false);
     }
@@ -63,7 +67,7 @@ const PaginationTable = ({CustomHead, Line, Detail, api_request, adt_style}) => 
                 </thead>
                 <tbody>
                 {items.map((item, index) => (
-                    <Line key={index} data={item} update={get_items}/>
+                    <Line key={index} data={item} update={get_items} action_on_click={handle_detail_data}/>
                 ))}
                 </tbody>
             </table>
@@ -88,7 +92,7 @@ const PaginationTable = ({CustomHead, Line, Detail, api_request, adt_style}) => 
                 </thead>
                 <tbody>
                 {items.map((item, index) => (
-                    <Line key={index} data={item} update={get_items} />
+                    <Line key={index} data={item} update={get_items} action_on_click={handle_detail_data}/>
                 ))}
                 </tbody>
             </table>
@@ -104,14 +108,15 @@ const PaginationTable = ({CustomHead, Line, Detail, api_request, adt_style}) => 
                 <button onClick={() => move_page(true)} className='base_button' style={{
                     userSelect: 'none',
                 }}>{'>'}</button>
-                {show_detail && <Detail data={}/>}
             </div>
         </div>
+        {show_detail ? <Detail data={detail_data} on_close={() => set_show_detail(false)} update={get_items}/> : null}
     </div>
 }
 PaginationTable.propTypes = {
     CustomHead: PropTypes.element.isRequired,
     Line: PropTypes.element.isRequired,
+    Detail: PropTypes.element.isRequired,
     api_request: PropTypes.func.isRequired,
     adt_style: PropTypes.object,
 }

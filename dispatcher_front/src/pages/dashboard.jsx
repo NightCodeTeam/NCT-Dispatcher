@@ -12,14 +12,14 @@ const MobileHeaderView = ({set_show}) => {
         set_show(false);
     };
 
+    const handleInnerClick = (e) => {
+        e.stopPropagation(); // Останавливаем всплытие события
+    };
+
     const nav = (path) => {
         set_show(false);
         navigate(path);
     }
-
-    const handleInnerClick = (e) => {
-        e.stopPropagation(); // Останавливаем всплытие события
-    };
 
     return <div className='overlay-backdrop' onClick={() => handleOuterClick()}>
         <div className='overlay-content base_flex_column rounded_border' style={{

@@ -8,7 +8,7 @@ export const incidents_service = {
                 skip: skip_,
                 limit: limit_,
             }
-        })).data.incidents || []
+        })).data.incidents.sort((a, b) => b.created_at.localeCompare(a.created_at)) || []
     },
 
     incident_detail: async (incident_id) => {
