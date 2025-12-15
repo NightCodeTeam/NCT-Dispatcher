@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
+from core.debug import logger
 from database.repo.base import ItemNotFound
 from depends import SessionDep, AppDep, TokenDep, PaginationParams
 from database import DB
@@ -15,6 +16,7 @@ bot = HttpTeleBot()
 
 @incidents_router_v1.get('/', response_model=MultipleIncidentResponse)
 async def all_incidents(session: SessionDep, pagination: PaginationParams, token: TokenDep):
+    logger.debug(f'all incidents: {token.user.id} {pagination}')
     if pagination.limit is None and pagination.skip is None:
         incidents = await DB.incidents.all(session=session, load_relations=True)
     else:
@@ -26,6 +28,7 @@ async def all_incidents(session: SessionDep, pagination: PaginationParams, token
         )
 
     return {'incidents': [{
+        'id': i.id,
         'title': i.title,
         'message': i.message,
         'logs': i.logs,

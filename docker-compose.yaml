@@ -10,5 +10,15 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  backend:
+    build:
+      context: ./dispatcher_api
+      dockerfile: Dockerfile
+    container_name: dispatcher_api
+    depends_on:
+      - db
+    ports:
+      - "8080:8000"
+
 volumes:
   postgres_data:

@@ -1,0 +1,47 @@
+@import "base.css";
+
+@import "mobile_desktop.css";
+@import "custom_header.css";
+@import "loading.css";
+@import "overlay.css";
+
+
+:root {
+    --bg-color: #FFFFFF;
+    --text-color: #1F1F1F;
+    --border-color: #E5E5E5;
+    --button-color: #FFFFFF;
+    --button-color-hover: #cfcfcf;
+    --button-disabled: #c5c5c5;
+    --button-pressed: #1677FF;
+
+    --header-color: #001529;
+    --header-text-color: #A6ADB4;
+    --header-current-color: #1677FF;
+    --header-current-text-color: #FFFFFF;
+
+    --win-info-cont-color: #e6f2ff;
+    --win-info-text-color: #0d47a1;
+    --win-warning-cont-color: #fff8e1;
+    --win-warning-text-color: #e65100;
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #eaeaea;
+    --border-color: #E5E5E5;
+    --button-color: #232323;
+    --button-color-hover: #3a3a3a;
+    --button-disabled: #3c3c3c;
+    --button-pressed: #1677FF;
+
+    --header-color: #00070F;
+    --header-text-color: #A6ADB4;
+    --header-current-color: #0A3572;
+    --header-current-text-color: #FFFFFF;
+
+    --win-info-cont-color: #0a1929;
+    --win-info-text-color: #90caf9;
+    --win-warning-cont-color: #2a2100;
+    --win-warning-text-color: #ffd54f;
+}

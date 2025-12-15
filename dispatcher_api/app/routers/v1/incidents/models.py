@@ -20,6 +20,7 @@ class MultipleIncidentResponse(BaseModel):
 
 
 class IncidentResponse(BaseModel):
+    id: int
     title: str
     message: str
     logs: str

@@ -1,0 +1,37 @@
+.header_a {
+    height: 100%;
+
+    color: var(--header-text-color);
+    font-size: 20px;
+
+    padding: 0 5px;
+
+    display: flex;
+    justify-content: center; /* Центрирует по горизонтали */
+    align-items: center;
+
+    border: 0 solid var(--header-color);
+
+    cursor: pointer;
+}
+.header_a_c {
+    height: 100%;
+    width: 100%;
+
+    color: var(--header-text-color);
+    font-size: 20px;
+
+    display: flex;
+    justify-content: center; /* Центрирует по горизонтали */
+    align-items: center;
+
+    border: 0 solid var(--header-color);
+
+    cursor: pointer;
+}
+
+.header_a:hover, .header_a_c:hover {
+    user-select: none;
+    background-color: var(--header-current-color);
+    color: var(--header-current-text-color);
+}

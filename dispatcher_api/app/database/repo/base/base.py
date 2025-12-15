@@ -23,6 +23,7 @@ class Repository(ABC, Singleton):
     async def __get_object_from_db(
         self,
         _filter: str | None = None,
+        offset: int | None = None,
         limit: int | None = None,
         session: AsyncSession | None = None,
         load_relations: bool = True,
@@ -37,6 +38,8 @@ class Repository(ABC, Singleton):
             query = query.filter(text(_filter))
         if limit:
             query = query.limit(limit)
+        if offset:
+            query = query.offset(offset)
 
         if session is None:
             async with new_session() as session:
@@ -59,11 +62,18 @@ class Repository(ABC, Singleton):
     async def some(
         self,
         _filter: str,
+        offset: int | None = None,
         limit: int | None = None,
         session: AsyncSession | None = None,
         load_relations: bool = True,
     ) -> tuple[T, ...]:
-        return await self.__get_object_from_db(_filter=_filter, limit=limit, session=session, load_relations=load_relations)
+        return await self.__get_object_from_db(
+            _filter=_filter,
+            offset=offset,
+            limit=limit,
+            session=session,
+            load_relations=load_relations
+        )
 
     @staticmethod
     async def __add(model: T, session: AsyncSession, commit: bool = False) -> bool:
@@ -153,21 +163,16 @@ class Repository(ABC, Singleton):
 
     async def pagination(
         self,
+        _filter: str | None = None,
         skip: int | None = None,
         limit: int | None = None,
         session: AsyncSession | None = None,
         load_relations: bool = False,
-        search_field: str = 'id'
     ) -> tuple[T, ...]:
-        _filter = ''
-        if skip:
-            _filter += f'{self.model.__tablename__}.{search_field}>={skip}'
-        if skip and limit:
-            _filter += ' AND '
-        if limit:
-            _filter += f'{self.model.__tablename__}.{search_field}<{skip + limit}'
         return await self.some(
             _filter=_filter,
+            offset=skip,
+            limit=limit,
             session=session,
             load_relations=load_relations,
         )
