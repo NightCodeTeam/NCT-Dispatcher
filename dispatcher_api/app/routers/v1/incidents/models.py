@@ -17,10 +17,6 @@ class NewStatusRequest(BaseModel):
     new_status: Literal['open', 'closed']
 
 
-class MultipleIncidentResponse(BaseModel):
-    incidents: List[IncidentResponse]
-
-
 class IncidentResponse(BaseModel):
     id: int
     title: str
@@ -32,3 +28,7 @@ class IncidentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime | None = None
     edit_by_user: str | None = None
+
+
+class MultipleIncidentResponse(BaseModel):
+    incidents: List[IncidentResponse]
