@@ -39,14 +39,14 @@ else:
 
     @app.middleware("http")
     async def catch_all_middleware(request: Request, call_next):
-        if nct_auth.in_ban(user_ip=request.client.host):
+        if await nct_auth.in_ban(user_ip=request.client.host):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
             )
         response = await call_next(request)
         # Если получен 404, вызываем нашу функцию
         if response.status_code == 404:
-            return nct_auth.ban(user_ip=request.client.host, reason='Dispatcher try get unknown route')
+            return await nct_auth.ban(user_ip=request.client.host, reason='Dispatcher try get unknown route')
         return response
 
 
