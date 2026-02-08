@@ -21,8 +21,7 @@ class Incident(Base):
     created_at: Mapped[datetime] = mapped_column(default=datetime.now())
     updated_at: Mapped[datetime] = mapped_column(default=datetime.now())
 
-    edit_by_id: Mapped[Optional[int]] = mapped_column(ForeignKey('users.id'), nullable=True)
-    edit_by: Mapped[Optional['User']] = relationship('User', back_populates='edited_incidents')
+    edit_by_id: Mapped[Optional[int]] = mapped_column(nullable=True)
 
     app_id: Mapped[int] = mapped_column(ForeignKey('apps.id'))
     app = relationship('App', back_populates='incidents')

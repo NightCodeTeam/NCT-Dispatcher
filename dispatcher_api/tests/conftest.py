@@ -16,7 +16,7 @@ from app.depends import TokenDep, SessionDep, AppDep
 from app.depends.session import get_session
 from app.depends.app import get_app
 from app.depends.auth import verify_token
-from depends.pagination import pagination_params, PaginationParamsClass
+
 
 db_path = "sqlite+aiosqlite:///dispatcher_test.sqlite3"
 

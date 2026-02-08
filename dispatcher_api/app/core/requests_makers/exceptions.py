@@ -16,3 +16,8 @@ class RequestMethodNotFoundException(RequestsMakersException):
         txt = f'Request method not found: {method}'
         logging.error(txt, 'error')
         super().__init__(txt)
+
+
+class UnableToAccess(RequestsMakersException):
+    def __init__(self, url: str):
+        super().__init__(f'Unable to access {url}')

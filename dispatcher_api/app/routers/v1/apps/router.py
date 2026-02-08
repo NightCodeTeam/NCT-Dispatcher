@@ -2,26 +2,30 @@ from os import listdir
 
 from fastapi import APIRouter, HTTPException, status
 
-from depends import SessionDep, PaginationParams, TokenDep
-from database import DB
-from database.repo.base import ItemNotFound
-from routers.misc_models import Ok
+from app.core.pydantic_misc_models import Ok
+from app.core.fast_decorators import cache, rate_limiter
+from app.core.redis_client import RedisDep
+from app.core.fast_depends import PaginationParams
+from app.core.sql_repository import ItemNotFound
+from app.depends import DBDep, UserDep
 from .models import NewAppRequest, MultipleAppsResponse, AppMultipleLogFilesResponse, AppResponse
+
 
 apps_router_v1 = APIRouter(prefix='/v1/apps', tags=['apps'])
 
 
-@apps_router_v1.get('/', response_model=MultipleAppsResponse)
-async def all_apps(session: SessionDep, pagination: PaginationParams, token: TokenDep):
-    if pagination.limit is None and pagination.skip is None:
-        apps = await DB.apps.all(session=session, load_relations=True)
-    else:
-        apps = await DB.apps.pagination(
+@apps_router_v1.get('', response_model=MultipleAppsResponse)
+@cache(key='apps:all')
+@rate_limiter(max_requests=10, time_delta=30)
+async def all_apps(db: DBDep, pagination: PaginationParams, user: UserDep, redis: RedisDep):
+    if pagination.limit is not None and pagination.skip is not None:
+        apps = await db.apps.pagination(
             skip=pagination.skip,
             limit=pagination.limit,
-            session=session,
             load_relations=True,
         )
+    else:
+        apps = await db.apps.all(load_relations=True)
     return {'apps': [{
     	'id': i.id,
     	'name': i.name,
@@ -33,19 +37,20 @@ async def all_apps(session: SessionDep, pagination: PaginationParams, token: Tok
 
 
 @apps_router_v1.post('/new', response_model=Ok)
-async def new_app(app: NewAppRequest, session: SessionDep, token: TokenDep):
-    return {'ok': await DB.apps.new(
+async def new_app(app: NewAppRequest, db: DBDep, user: UserDep):
+    return {'ok': await db.apps.new(
         name=app.name,
         status_url=app.status_url,
         logs_folder=app.logs_folder,
-        added_by_id=token.user.id,
-        session=session
+        added_by_id=user.id,
     )}
 
 
 @apps_router_v1.get('/{app_id}', response_model=AppResponse)
-async def app_by_id(session: SessionDep, app_id: int, token: TokenDep):
-    app = await DB.apps.by_id(app_id=app_id, session=session)
+@cache(key='apps:by_id')
+@rate_limiter(max_requests=10, time_delta=30)
+async def app_by_id(db: DBDep, app_id: int, user: UserDep, redis: RedisDep):
+    app = await db.apps.by_id(app_id=app_id)
     if app is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -55,8 +60,9 @@ async def app_by_id(session: SessionDep, app_id: int, token: TokenDep):
 
 
 @apps_router_v1.get('/{app_id}/logs', response_model=AppMultipleLogFilesResponse)
-async def app_logs(session: SessionDep, app_id: int, token: TokenDep):
-    app = await DB.apps.by_id(app_id=app_id, session=session)
+@rate_limiter(max_requests=10, time_delta=30)
+async def app_logs(db: DBDep, app_id: int, user: UserDep):
+    app = await db.apps.by_id(app_id=app_id)
     if app is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -80,9 +86,9 @@ async def app_logs(session: SessionDep, app_id: int, token: TokenDep):
 
 
 @apps_router_v1.delete('/{app_id}', response_model=Ok)
-async def del_app_by_id(session: SessionDep, app_id: int, token: TokenDep):
+async def del_app_by_id(db: DBDep, app_id: int, user: UserDep):
     try:
-        return {'ok': await DB.apps.del_by_id(app_id=app_id, session=session)}
+        return {'ok': await db.apps.del_by_id(app_id=app_id)}
     except ItemNotFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

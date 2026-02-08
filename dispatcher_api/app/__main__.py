@@ -1,52 +1,89 @@
-import uvicorn
-import asyncio
-from threading import Thread
+try:
+    import app
+except ImportError:
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, status
+import uvicorn
+import redis.asyncio as redis
+from fastapi import FastAPI, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.requests import Request
 
-from core.debug import logger
-from core.client_makers import nct_auth
-from routers import incidents_router_v1, apps_router_v1, auth_router_v1
-from database import init_db
+from app.core.debug import logger
+from app.core.redis_client import RedisClient
+from app.routers import incidents_router_v1, apps_router_v1, auth_router_v1
+from app.database import init_db
+from app.services import auth_service, blocklist_service
 
-from settings import settings
+from app.settings import settings
+
+
+redis_c = redis.ConnectionPool.from_url(settings.REDIS_URL, decode_responses=True)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    yield
 
+    app.state.redis = RedisClient(
+        redis_pool=redis_c,
+        prefix=settings.REDIS_PREFIX,
+        expire=settings.REDIS_EXPIRE
+    )
+    yield
 
 if settings.DEBUG:
     app = FastAPI(
         title='NCT Dispatcher',
-        version='0.2.0',
+        version='0.3.0',
         lifespan=lifespan,
     )
 else:
     app = FastAPI(
         title='NCT Dispatcher',
-        version='0.2.0',
+        version='0.3.0',
         lifespan=lifespan,
         docs_url=None,
         redoc_url=None,
         openapi_url=None
     )
 
-    @app.middleware("http")
-    async def catch_all_middleware(request: Request, call_next):
-        if await nct_auth.in_ban(user_ip=request.client.host):
+    @app.middleware('http')
+    async def blocker(request: Request, call_next):
+        # Проверяем в бане ли пользователь
+        if await blocklist_service.in_ban(request.client.host, RedisClient(
+            redis_pool=redis_c,
+            prefix=settings.REDIS_PREFIX,
+            expire=settings.REDIS_EXPIRE
+        )):
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
+        # Проверяем не ведет ли эндпойнт в никуда
+        exceptions_routes = [ # список эндпоинтов, которые сразу получают бан
+            '/.env',
+        ]
+        if not settings.DEBUG:
+            exceptions_routes.extend([
+                '/openapi.json',
+                '/docs',
+                '/redoc',
+                '/swagger',
+            ])
+        routes = tuple([i.path.split('{')[0] for i in app.routes if i not in exceptions_routes])
+        if not request.url.path.startswith(routes):
+            await blocklist_service.ban(
+                ip=request.client.host,
+                reason='Dispatcher > Endpoint not found',
+                duration_days=3,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
             )
         response = await call_next(request)
-        # Если получен 404, вызываем нашу функцию
-        if response.status_code == 404:
-            return await nct_auth.ban(user_ip=request.client.host, reason='Dispatcher try get unknown route')
         return response
 
 

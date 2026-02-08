@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated
 from dataclasses import dataclass
 
 from fastapi import Depends

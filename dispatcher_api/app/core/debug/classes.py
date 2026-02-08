@@ -6,7 +6,6 @@ from os import mkdir
 from os.path import exists, join
 
 from .debug_dataclass import Level
-from ..single import Singleton
 
 from settings import settings
 
@@ -20,7 +19,7 @@ class HasStr(Protocol):
 
 
 
-class Logger(Singleton):
+class Logger:
     rotating_logger: logging.Logger | None = None
     error_logger: logging.Logger | None = None
 

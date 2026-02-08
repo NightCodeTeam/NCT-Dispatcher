@@ -13,7 +13,6 @@ class App(Base):
     status_url: Mapped[str] = mapped_column(nullable=True)
     logs_folder: Mapped[str] = mapped_column(nullable=True)
 
-    added_by_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    added_by: Mapped['User'] = relationship('User', back_populates='apps')
+    added_by_id: Mapped[int]
 
     incidents = relationship(Incident, back_populates='app', cascade='all, delete')

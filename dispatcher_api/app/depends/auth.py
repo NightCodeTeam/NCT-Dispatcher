@@ -1,8 +1,12 @@
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request, Response
 
-from core.auth import verify_token, TokenData
+from app.handlers.auth import AuthHandler, User
 
 
-TokenDep = Annotated[TokenData, Depends(verify_token)]
+async def verify_access_token(request: Request, response: Response) -> User:
+    return await AuthHandler().verify_token(request, response)
+
+
+UserDep = Annotated[User, Depends(verify_access_token)]

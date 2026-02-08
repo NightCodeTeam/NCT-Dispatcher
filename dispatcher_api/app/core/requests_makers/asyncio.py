@@ -3,8 +3,8 @@ import logging
 
 import aiohttp
 
+from .exceptions import OutOfTries, UnableToAccess
 from .response import ResponseData, Method
-from .exceptions import OutOfTries
 
 
 class HttpMakerAsync:
@@ -38,7 +38,10 @@ class HttpMakerAsync:
         params: dict | None = None,
         headers: dict | None = None,
         try_wait_if_error: bool = True,
-    ) -> ResponseData | None:
+    ) -> ResponseData:
+        logging.debug(
+            f'{self.__class__.__name__} {method} -> {path} ? {params}',
+        )
         for _ in range(self._tries_to_reconnect):
             try:
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self._timeout)) as session:
@@ -101,9 +104,10 @@ class HttpMakerAsync:
         params: dict | None = None,
         headers: dict | None = None,
         try_wait_if_error: bool = True,
-    ) -> ResponseData | None:
-        logging.debug(f'{self.__class__.__name__} > make')
-        return await self.__execute(
+    ) -> ResponseData:
+        logging.debug(f'{self.__class__.__name__} > make -> {self.get_full_path(url)}\n')
+
+        res = await self.__execute(
             path=url,
             method=method,
             data=data,
@@ -112,11 +116,12 @@ class HttpMakerAsync:
             headers=headers,
             try_wait_if_error=try_wait_if_error,
         )
+        return res
 
     async def __get_response_data(
         self,
         response: aiohttp.ClientResponse,
-    ) -> ResponseData | None:
+    ) -> ResponseData:
         # Получаем тип контента (проверяем оба варианта регистра)
         try:
             content_type = (
@@ -137,10 +142,13 @@ class HttpMakerAsync:
                     data = await response.json(content_type='json')
                 case _:
                     logging.warning(f'{self.__class__.__name__} > unreadable content type: {content_type}')
-                    return None
+                    raise UnableToAccess(response.url)
             return ResponseData(
+                url=str(response.url),
+                status=response.status,
+                headers=dict(response.headers),
                 json=data,
             )
         except aiohttp.ContentTypeError as e:
             logging.error(e)
-            return None
+            raise UnableToAccess(response.url)

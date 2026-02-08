@@ -1,55 +1,39 @@
-from random import randint
+from fastapi import APIRouter, status, Response
+from fastapi.requests import Request
 
-from fastapi import APIRouter, HTTPException, status
-
-from settings import settings
-from .models import Token, UserLogin
-from routers.misc_models import Ok
-from depends import SessionDep
-from database import DB
-from core.auth import verify_hashed, create_access_token, get_hash
-from core.trash import generate_trash_string
+from app.core.pydantic_misc_models import Ok
+from app.core.fast_decorators import cache, rate_limiter
+from app.core.redis_client import RedisDep
+from app.handlers.auth import AuthHandler, UserLogin, UserRegister
+from app.depends import UserDep
 
 
 auth_router_v1 = APIRouter(prefix='/v1/auth', tags=['auth'])
 
 
-@auth_router_v1.post('/login', response_model=Token)
-async def login(user_data: UserLogin, session: SessionDep):
-    user = await DB.users.by_name(user_data.username, session)
-    if not user or not verify_hashed(user_data.password, user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Некорректное имя пользователя или пароль",
-        )
-    return {
-        "access_token": create_access_token(data={
-            "sub": user.name,
-            generate_trash_string(randint(3, 6)): generate_trash_string(randint(5, 20))
-        }),
-        "token_type": "Bearer"
-    }
+@auth_router_v1.post('/login', response_model=Ok)
+async def login(response: Response, user_data: UserLogin):
+    return {'ok': await AuthHandler().login(user_data, response)}
+
+
+@auth_router_v1.post('/refresh', response_model=Ok)
+async def refresh(request: Request, response: Response):
+    #await auth.refresh(request=request, response=response)
+    return {'ok': True}
+
+
+@auth_router_v1.post('/logout', response_model=Ok)
+async def logout(response: Response, user: UserDep):
+    return {'ok': await AuthHandler().logout(user=user, response=response)}
 
 
 @auth_router_v1.post('/register', response_model=Ok)
-async def register(user_data: UserLogin, session: SessionDep):
-    if not settings.DEBUG:
-        raise HTTPException(
-            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-        )
+async def register(user_data: UserRegister):
+    return {'ok': await AuthHandler().register(user=user_data)}
 
-    if len(user_data.username) < 6 or len(user_data.password) < 6:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Логин или пароль должны быть больше 6"
-        )
 
-    if await DB.users.exists(user_data.username, session):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Имя пользователя уже существует"
-        )
-
-    if not await DB.users.new(user_data.username, get_hash(user_data.password), session):
-        raise HTTPException(status_code=400, detail="Внутренняя ошибка приложения, свяжитесь с администрацией")
-    return {'ok': True}
+@auth_router_v1.post('/who_am_i', response_model=Ok)
+@cache('auth:who')
+@rate_limiter(10, 30)
+async def who_am_i(request: Request, response: Response, user: UserDep, redis: RedisDep):
+    return {'name': user.name}

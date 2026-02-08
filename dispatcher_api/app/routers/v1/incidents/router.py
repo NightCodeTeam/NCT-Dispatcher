@@ -1,14 +1,18 @@
 from fastapi import APIRouter, HTTPException
 
-from core.debug import logger
-from core.telegrambot import TeleBot, BotMessage
-from database.repo.base import ItemNotFound
-from depends import SessionDep, AppDep, TokenDep, PaginationParams
-from database import DB
-from routers.misc_models import Ok
-from settings import settings
+from app.core.pydantic_misc_models import Ok
+from app.core.fast_decorators import cache, rate_limiter
+from app.core.redis_client import RedisDep
+from app.depends import UserDep, DBDep, AppDep
+from app.core.fast_depends import PaginationParams
+from app.core.debug import logger
+from app.core.telegrambot import TeleBot, BotMessage
+from app.core.sql_repository import ItemNotFound
+from app.services.authservice import AuthService
 from .models import IncidentRequest, MultipleIncidentResponse, IncidentResponse
 from .models import NewStatusRequest
+
+from settings import settings
 
 
 incidents_router_v1 = APIRouter(prefix='/v1/incidents', tags=['incidents'])
@@ -20,19 +24,17 @@ bot = TeleBot(
 
 
 @incidents_router_v1.get('/', response_model=MultipleIncidentResponse)
-async def all_incidents(session: SessionDep, pagination: PaginationParams, token: TokenDep):
-    logger.debug(f'all incidents: {token.user.id} {pagination}')
-    if pagination.limit is None and pagination.skip is None:
-        incidents = await DB.incidents.all(session=session, load_relations=True)
-    else:
-        incidents = await DB.incidents.pagination(
+@cache(key='incidents:all_incident')
+@rate_limiter(max_requests=10, time_delta=30)
+async def all_incidents(db: DBDep, pagination: PaginationParams, user: UserDep, redis: RedisDep):
+    if pagination.limit is not None and pagination.skip is not None:
+        incidents = await db.incidents.pagination(
             skip=pagination.skip,
             limit=pagination.limit,
-            order_by_field='created_at',
-            session=session,
             load_relations=True,
         )
-
+    else:
+        incidents = await db.incidents.all(load_relations=True)
     return {'incidents': [{
         'id': i.id,
         'title': i.title,
@@ -43,31 +45,34 @@ async def all_incidents(session: SessionDep, pagination: PaginationParams, token
         'app_name': i.app.name,
         'created_at': i.created_at,
         'updated_at': i.updated_at,
-        'edit_by_user': i.edit_by.name if i.edit_by is not None else None
+        'edit_by_user': await AuthService().user_by_id(
+            i.edit_by_id, redis
+        ) if i.edit_by_id else None
     } for i in incidents]}
 
 
 @incidents_router_v1.post('/new', response_model=Ok)
-async def post_incident(incident: IncidentRequest, app: AppDep, session: SessionDep):
+async def post_incident(incident: IncidentRequest, app: AppDep, db: DBDep):
     if not settings.DEBUG:
         await bot.client.sent_msg(BotMessage(
             chat_id=settings.TELEGRAM_CHAT_ID,
             text=f'Новый инцидент: {incident.title} ({app.name})\n{incident.message}'
         ))
-    return {'ok': await DB.incidents.new(
+    return {'ok': await db.incidents.new(
         title=incident.title,
         message=incident.message,
         logs=incident.logs,
         level=incident.level,
         app_id=app.id,
-        session=session,
         commit=True
     )}
 
 
 @incidents_router_v1.get('/{incident_id}', response_model=IncidentResponse)
-async def incident_by_id(session: SessionDep, token: TokenDep, incident_id: int):
-    inc = await DB.incidents.by_id(incident_id=incident_id, session=session, load_relations=True)
+@cache(key='incidents:by_id')
+@rate_limiter(max_requests=10, time_delta=30)
+async def incident_by_id(db: DBDep, user: UserDep, incident_id: int, redis: RedisDep):
+    inc = await db.incidents.by_id(incident_id=incident_id, load_relations=True)
     if inc is None:
         raise HTTPException(status_code=404, detail=f'Incident {incident_id} not found')
     return {
@@ -80,16 +85,15 @@ async def incident_by_id(session: SessionDep, token: TokenDep, incident_id: int)
         'app_name': inc.app.name,
         'created_at': inc.created_at,
         'updated_at': inc.updated_at,
-        'edit_by_user': inc.edit_by.name if inc.edit_by is not None else None
+        'edit_by_user': await AuthService().user_by_id(inc.edit_by_id, redis) if inc.edit_by_id else None
     }
 
 
 @incidents_router_v1.delete('/{incident_id}', response_model=Ok)
-async def del_incident_by_id(session: SessionDep, token: TokenDep, incident_id: int):
+async def del_incident_by_id(db: DBDep, user: UserDep, incident_id: int):
     try:
-        return {'ok': await DB.incidents.del_by_id(
+        return {'ok': await db.incidents.del_by_id(
             incident_id=incident_id,
-            session=session,
             commit=True,
         )}
     except ItemNotFound:
@@ -98,18 +102,16 @@ async def del_incident_by_id(session: SessionDep, token: TokenDep, incident_id: 
 
 @incidents_router_v1.put('/{incident_id}/status', response_model=Ok)
 async def update_status(
-    session: SessionDep,
-    token: TokenDep,
+    db: DBDep,
+    user: UserDep,
     incident_id: int,
     status_req: NewStatusRequest
 ):
     try:
-        return {'ok': await DB.incidents.update_status(
+        return {'ok': await db.incidents.update_status(
             incident_id=incident_id,
             new_status=status_req.new_status,
-            updated_by_id=token.user.id,
-            session=session,
-            commit=True,
+            updated_by_id=user.id,
         )}
     except ItemNotFound:
         raise HTTPException(status_code=404, detail='Incident not found')
