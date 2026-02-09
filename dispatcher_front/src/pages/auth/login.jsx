@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { auth_service } from '../../api/auth';
 import {
+    Link,
     useNavigate,
 } from "react-router-dom"
 import {LoadingAnimation} from "../../components/utils/loading_animation.jsx";
 
 
-export const Login = () => {
+export const Login = ({set_username}) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
@@ -29,7 +30,8 @@ export const Login = () => {
 
         try {
             if (await auth_service.login(formData.username, formData.password)) {
-                navigate('/')
+                set_username(formData.username);
+                navigate('/calc')
             }
         } catch (error) {
             setError(error.response?.data?.detail || 'Непредвиденная ошибка');
@@ -68,8 +70,23 @@ export const Login = () => {
             required
         />
         {error && <div style={{ color: 'red' }}>{error}</div>}
-        <button type="submit" disabled={loading} className='base_button'>
+        <button type="submit" disabled={loading} className='base_button desktop'>
             {loading ? 'Вхожу...' : 'Войти'}
         </button>
+        <button type="submit" disabled={loading} style={{
+            padding: '15px',
+            marginTop: '10px',
+        }} className='base_button mobile'>
+            {loading ? 'Вхожу...' : 'Войти'}
+        </button>
+        <Link to='/auth/register' style={{
+            textDecoration: 'none',
+            userSelect: 'none',
+        }} className='desktop'>Создать</Link>
+        <Link to='/auth/register' style={{
+            textDecoration: 'none',
+            userSelect: 'none',
+            marginTop: 10
+        }} className='mobile'>Создать</Link>
     </form>
 };

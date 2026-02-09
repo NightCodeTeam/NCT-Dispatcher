@@ -17,8 +17,13 @@ import IncidentsView from "./pages/incidents/incidents.jsx";
 
 function App() {
     const [theme, set_theme] = useState(localStorage.getItem('theme') || 'dark');
+    const [user, set_username] = useState(get_user())
 
-    if (!auth_service.isAuthenticated() && window.location.pathname !== '/auth/login') {
+    async function get_user() {
+        return await auth_service.user() || ''
+    }
+
+    if (user === '' && window.location.pathname !== '/auth/login') {
         window.location.href = '/auth/login';
     }
 
@@ -33,6 +38,8 @@ function App() {
                         </Route>
                         <Route path="/auth" element={<AuthOutlet />}>
                             <Route path="login" element={<Login />}/>
+                            <Route path="logout" element={<Logout />}/>
+                            <Route path="register" element={<Register />}/>
                         </Route>
                     </Routes>
                 </div>
