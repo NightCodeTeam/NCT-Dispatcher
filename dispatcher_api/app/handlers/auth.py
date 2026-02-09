@@ -1,3 +1,4 @@
+from time import time
 from dataclasses import dataclass
 from typing import Literal
 from pydantic import BaseModel
@@ -11,12 +12,12 @@ from app.settings import settings
 
 
 class UserLogin(BaseModel):
-    username: str
+    name: str
     password: str
 
 
 class UserRegister(BaseModel):
-    username: str
+    name: str
     password: str
     key: str
 
@@ -116,7 +117,7 @@ class AuthHandler:
         )
 
     async def login(self, user: UserLogin, response: Response) -> bool:
-        tokens = await auth_service.login(name=user.username, password=user.password)
+        tokens = await auth_service.login(name=user.name, password=user.password)
         self.__set_tokens(response, tokens.access_token, tokens.refresh_token)
         return True
 
@@ -131,7 +132,7 @@ class AuthHandler:
                 detail='Goodbuy!'
             )
         return await auth_service.register(
-            name=user.username,
+            name=user.name,
             password=user.password,
             key=user.key
         )

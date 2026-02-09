@@ -8,6 +8,8 @@ import {
 import './css/style.css';
 
 import {Login} from "./pages/auth/login.jsx";
+import {Logout} from "./pages/auth/logout.jsx";
+import {Register} from "./pages/auth/register.jsx";
 import {AuthOutlet} from "./pages/auth/outlet.jsx";
 import auth_service from "./api/auth.jsx";
 import Dashboard from "./pages/dashboard.jsx";

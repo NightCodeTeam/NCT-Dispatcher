@@ -93,9 +93,9 @@ app.include_router(auth_router_v1)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_URL],
+    allow_origins=[settings.FRONTEND_URL, 'http://localhost:8000', 'http://127.0.0.1:8000/', 'http://localhost:8000/'],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=['GET', 'POST', 'DELETE'],
     allow_headers=["*"],
 )
 

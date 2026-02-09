@@ -5,7 +5,7 @@ export const auth_service = {
     // Регистрация
     register: async (username, password, key) => {
         return (await api.post('/v1/auth/register', {
-            username: username,
+            name: username,
             password: password,
             key: key,
         })).data;
@@ -14,7 +14,7 @@ export const auth_service = {
     // Логин
     login: async (username, password) => {
         return (await api.post('/v1/auth/login', {
-            username: username,
+            name: username,
             password: password,
         })).data?.ok || false;
     },
@@ -26,11 +26,17 @@ export const auth_service = {
     },
 
     user: async () => {
+        if (window.location.pathname.startsWith('/auth')){
+            return ''
+        }
         return await api.get('/v1/auth/who_am_i') || ''
     },
 
     // Проверка авторизации
     isAuthenticated: async () => {
+        if (window.location.pathname.startsWith('/auth')) {
+            return ''
+        }
         return await api.get('/v1/auth/who_am_i') || ''
     },
 };

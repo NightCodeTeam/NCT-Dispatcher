@@ -28,12 +28,12 @@ async def logout(response: Response, user: UserDep):
 
 
 @auth_router_v1.post('/register', response_model=Ok)
-async def register(user_data: UserRegister):
-    return {'ok': await AuthHandler().register(user=user_data)}
+async def register(request: Request, user_data: UserRegister):
+    return {'ok': await AuthHandler().register(request=request, user=user_data)}
 
 
-@auth_router_v1.post('/who_am_i', response_model=Ok)
-@cache('auth:who')
+@auth_router_v1.get('/who_am_i', response_model=Ok)
+#@cache('auth:who')
 @rate_limiter(10, 30)
 async def who_am_i(request: Request, response: Response, user: UserDep, redis: RedisDep):
     return {'name': user.name}
