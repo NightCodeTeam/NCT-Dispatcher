@@ -120,7 +120,16 @@ class AuthHandler:
         self.__set_tokens(response, tokens.access_token, tokens.refresh_token)
         return True
 
-    async def register(self, user: UserRegister) -> bool:
+    async def register(self, request: Request, user: UserRegister) -> bool:
+        if user.key != settings.APP_ACCESS_KEY:
+            await blocklist_service.ban(
+                ip=request.client.host,
+                reason='Dispatcher > Try to parse key'
+            )
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                detail='Goodbuy!'
+            )
         return await auth_service.register(
             name=user.username,
             password=user.password,
