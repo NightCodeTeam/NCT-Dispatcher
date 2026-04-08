@@ -4,7 +4,7 @@ from core.redis_client import RedisClient
 from src.settings import settings
 
 
-class BlocklistService(HttpMakerAsyncImproved):
+class BlocklistServiceBase(HttpMakerAsyncImproved):
     def __init__(self):
         super().__init__(
             base_url=settings.BLOCKER_URL,
@@ -13,6 +13,23 @@ class BlocklistService(HttpMakerAsyncImproved):
             },
             parse_method=self._get_simple_response,
         )
+
+    async def in_ban(self, ip: str, redis: RedisClient) -> bool:
+        return False
+
+    async def ban(
+        self, ip: str,
+        reason: str = 'no reason',
+        duration_days: int = 3,
+        permanent: bool = False,
+        white: bool = False
+    ) -> bool:
+        return True
+
+
+class BlocklistService(BlocklistServiceBase):
+    def __init__(self):
+        super().__init__()
 
     async def in_ban(self, ip: str, redis: RedisClient) -> bool:
         data = await self.redis_cache(
@@ -40,4 +57,4 @@ class BlocklistService(HttpMakerAsyncImproved):
         })).json.get('ok', False)
 
 
-blocklist_service = BlocklistService()
+blocklist_service = BlocklistService() if not settings.DEBUG else BlocklistServiceBase()

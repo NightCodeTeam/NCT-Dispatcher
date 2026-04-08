@@ -106,5 +106,4 @@ app.add_middleware(
 
 
 if __name__ == "__main__":
-    logger.log('Init fastapi', 'info')
     uvicorn.run(app, host=settings.HOST, port=settings.PORT)

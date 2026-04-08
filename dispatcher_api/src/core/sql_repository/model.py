@@ -16,7 +16,7 @@ class Repository(ABC):
     """Улучшенная версия базового репозитория для работы с базой данных"""
     table_name: str
 
-    def __init__(self, model: Type[T], session: AsyncSession, relationships: List[str] | Tuple[str] | None = None):
+    def __init__(self, model: Type[T], session: AsyncSession, relationships: list[str, ...] | tuple[str, ...] | None = None):
         self.model = model
         self.table_name = model.__tablename__
         self.relationships = relationships

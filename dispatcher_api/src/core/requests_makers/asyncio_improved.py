@@ -171,7 +171,7 @@ class HttpMakerAsyncImproved:
         :param json: JSON-данные для отправки.
         :param params: Параметры запроса.
         :param headers: Заголовки запроса.
-        :param try_wait_if_error: Флаг, указывающий на необходимость ожидания перед повторной попыткой.
+        :param try_wait_if_error: Подождать и попробовать снова при ошибке или вернуть ошибку.
         :return: Объект ResponseData с данными ответа.
         """
         logging.debug(f'{self.__class__.__name__} > make -> {self.full_path(url)}')
