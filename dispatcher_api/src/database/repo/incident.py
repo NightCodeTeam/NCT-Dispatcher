@@ -5,7 +5,7 @@ from typing import Literal
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.sql_repository import Repository, ItemNotFound
+from src.core.sql_repository import Repository, ItemNotFound
 from database.models.incident import Incident
 
 

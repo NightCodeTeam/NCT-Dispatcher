@@ -2,9 +2,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.debug import logger
-from app.core.trash import generate_trash_string
-from app.core.sql_repository import Repository, ItemNotFound
+from src.core.debug import logger
+from src.core.trash import generate_trash_string
+from src.core.sql_repository import Repository, ItemNotFound
 from database.models import App
 
 

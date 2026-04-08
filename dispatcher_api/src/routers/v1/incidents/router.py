@@ -1,14 +1,14 @@
 from fastapi import APIRouter, HTTPException
 
-from app.core.pydantic_misc_models import Ok
-from app.core.fast_decorators import cache, rate_limiter
-from app.core.redis_client import RedisDep
-from app.depends import UserDep, DBDep, AppDep
-from app.core.fast_depends import PaginationParams
-from app.core.debug import logger
-from app.core.telegrambot import TeleBot, BotMessage
-from app.core.sql_repository import ItemNotFound
-from app.services.authservice import AuthService
+from src.core.pydantic_misc_models import Ok
+from src.core.fast_decorators import cache, rate_limiter
+from src.core.redis_client import RedisDep
+from src.depends import UserDep, DBDep, AppDep
+from src.core.fast_depends import PaginationParams
+from src.core.debug import logger
+from src.core.telegrambot import TeleBot, BotMessage
+from src.core.sql_repository import ItemNotFound
+from src.services.authservice import AuthService
 from .models import IncidentRequest, MultipleIncidentResponse, IncidentResponse
 from .models import NewStatusRequest
 
@@ -42,7 +42,7 @@ async def all_incidents(db: DBDep, pagination: PaginationParams, user: UserDep, 
         'logs': i.logs,
         'level': i.level,
         'status': i.status,
-        'app_name': i.app.name,
+        'app_name': i.src.name,
         'created_at': i.created_at,
         'updated_at': i.updated_at,
         'edit_by_user': await AuthService().user_by_id(
@@ -56,14 +56,14 @@ async def post_incident(incident: IncidentRequest, app: AppDep, db: DBDep):
     if not settings.DEBUG:
         await bot.client.sent_msg(BotMessage(
             chat_id=settings.TELEGRAM_CHAT_ID,
-            text=f'Новый инцидент: {incident.title} ({app.name})\n{incident.message}'
+            text=f'Новый инцидент: {incident.title} ({src.name})\n{incident.message}'
         ))
     return {'ok': await db.incidents.new(
         title=incident.title,
         message=incident.message,
         logs=incident.logs,
         level=incident.level,
-        app_id=app.id,
+        app_id=src.id,
         commit=True
     )}
 
@@ -82,7 +82,7 @@ async def incident_by_id(db: DBDep, user: UserDep, incident_id: int, redis: Redi
         'logs': inc.logs,
         'level': inc.level,
         'status': inc.status,
-        'app_name': inc.app.name,
+        'app_name': inc.src.name,
         'created_at': inc.created_at,
         'updated_at': inc.updated_at,
         'edit_by_user': await AuthService().user_by_id(inc.edit_by_id, redis) if inc.edit_by_id else None

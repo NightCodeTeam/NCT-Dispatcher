@@ -2,12 +2,12 @@ from os import listdir
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.core.pydantic_misc_models import Ok
-from app.core.fast_decorators import cache, rate_limiter
-from app.core.redis_client import RedisDep
-from app.core.fast_depends import PaginationParams
-from app.core.sql_repository import ItemNotFound
-from app.depends import DBDep, UserDep
+from src.core.pydantic_misc_models import Ok
+from src.core.fast_decorators import cache, rate_limiter
+from src.core.redis_client import RedisDep
+from src.core.fast_depends import PaginationParams
+from src.core.sql_repository import ItemNotFound
+from src.depends import DBDep, UserDep
 from .models import NewAppRequest, MultipleAppsResponse, AppMultipleLogFilesResponse, AppResponse
 
 
@@ -39,9 +39,9 @@ async def all_apps(db: DBDep, pagination: PaginationParams, user: UserDep, redis
 @apps_router_v1.post('/new', response_model=Ok)
 async def new_app(app: NewAppRequest, db: DBDep, user: UserDep):
     return {'ok': await db.apps.new(
-        name=app.name,
-        status_url=app.status_url,
-        logs_folder=app.logs_folder,
+        name=src.name,
+        status_url=src.status_url,
+        logs_folder=src.logs_folder,
         added_by_id=user.id,
     )}
 
@@ -71,8 +71,8 @@ async def app_logs(db: DBDep, app_id: int, user: UserDep):
 
     logs = []
     try:
-        for file_path in listdir(app.logs_folder):
-            with open(f'{app.logs_folder}/{file_path}', 'r') as f:
+        for file_path in listdir(src.logs_folder):
+            with open(f'{src.logs_folder}/{file_path}', 'r') as f:
                 logs.append({
                     'title': file_path,
                     'log': f.read()

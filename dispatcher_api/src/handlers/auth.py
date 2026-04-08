@@ -5,10 +5,10 @@ from pydantic import BaseModel
 
 from fastapi import Request, Response, HTTPException, status
 
-from app.services import auth_service, blocklist_service
-from app.core.simplejwt import SimpleJWT, TokenData
+from src.services import auth_service, blocklist_service
+from src.core.simplejwt import SimpleJWT, TokenData
 
-from app.settings import settings
+from src.settings import settings
 
 
 class UserLogin(BaseModel):

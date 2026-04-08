@@ -3,10 +3,10 @@ from dataclasses import dataclass
 
 from fastapi import HTTPException
 
-from app.core.requests_makers import HttpMakerAsync
-from app.core.redis_client import RedisClient
+from src.core.requests_makers import HttpMakerAsyncImproved
+from src.core.redis_client import RedisClient
 
-from app.settings import settings
+from src.settings import settings
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,21 +25,15 @@ class User:
     key_id: int
 
 
-class AuthService(HttpMakerAsync):
+class AuthService(HttpMakerAsyncImproved):
     def __init__(self):
         super().__init__(
             base_url=settings.AUTH_URL,
             base_headers={
                 'X-Access-Code': settings.AUTH_ACCESS_CODE,
                 'X-App-Name': settings.AUTH_APP_NAME
-            }
-        )
-
-    @staticmethod
-    async def __cache(redis: RedisClient, key: str) -> dict | None:
-        return await redis.get_dict(
-            key=key,
-            spec_app_prefix=settings.BLOCKER_REDIS_PREFIX
+            },
+            parse_method=self._get_simple_response,
         )
 
     async def login(self, name: str, password: str) -> AuthToken:
@@ -77,9 +71,9 @@ class AuthService(HttpMakerAsync):
         })).json['ok']
 
     async def user_by_id(self, user_id: int, redis: RedisClient) -> User:
-        data = await self.__cache(redis, f'get_user:user_id:{user_id}')
+        data = await self.redis_cache(redis, f'get_user:user_id:{user_id}', settings.BLOCKER_REDIS_PREFIX)
         if data is not None:
-            return data
+            return User(**data)
         ans = await self._make(f'/v1/auth/users/{user_id}')
         if ans.status != 200:
             raise HTTPException(

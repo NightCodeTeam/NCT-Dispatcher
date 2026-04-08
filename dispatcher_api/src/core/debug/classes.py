@@ -53,7 +53,7 @@ class Logger:
         self.rotating_logger.setLevel(logging.DEBUG)
 
         rotating_handler = RotatingFileHandler(
-            join(logs_dir, 'app.log'),
+            join(logs_dir, 'src.log'),
             maxBytes=10 * 1024 * 1024,
             backupCount=1,
             encoding='utf-8'

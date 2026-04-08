@@ -1,22 +1,24 @@
-from core.requests_makers import HttpMakerAsync
+from core.requests_makers import HttpMakerAsyncImproved
 from core.redis_client import RedisClient
 
-from app.settings import settings
+from src.settings import settings
 
 
-class BlocklistService(HttpMakerAsync):
+class BlocklistService(HttpMakerAsyncImproved):
     def __init__(self):
         super().__init__(
             base_url=settings.BLOCKER_URL,
             base_headers={
                 'X-Access-Code': settings.BLOCKER_ACCESS_CODE
-            }
+            },
+            parse_method=self._get_simple_response,
         )
 
     async def in_ban(self, ip: str, redis: RedisClient) -> bool:
-        data = await redis.get_json(
+        data = await self.redis_cache(
             key=f'in_ban:ip_address:{ip}',
-            spec_app_prefix=settings.BLOCKER_REDIS_PREFIX
+            spec_app_prefix=settings.BLOCKER_REDIS_PREFIX,
+            redis=redis
         )
         if data is not None and type(data.get('ok')) == bool:
             return data['ok']

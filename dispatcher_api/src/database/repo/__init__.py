@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .incident import IncidentRepo
 from .app import AppRepo
-from app.core.sql_repository import DataBaseRepo
+from src.core.sql_repository import DataBaseRepo
 
 
 class DataBase(DataBaseRepo):

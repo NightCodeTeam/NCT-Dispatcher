@@ -1,11 +1,11 @@
 from fastapi import APIRouter, status, Response
 from fastapi.requests import Request
 
-from app.core.pydantic_misc_models import Ok
-from app.core.fast_decorators import cache, rate_limiter
-from app.core.redis_client import RedisDep
-from app.handlers.auth import AuthHandler, UserLogin, UserRegister
-from app.depends import UserDep
+from src.core.pydantic_misc_models import Ok
+from src.core.fast_decorators import cache, rate_limiter
+from src.core.redis_client import RedisDep
+from src.handlers.auth import AuthHandler, UserLogin, UserRegister
+from src.depends import UserDep
 
 
 auth_router_v1 = APIRouter(prefix='/v1/auth', tags=['auth'])
