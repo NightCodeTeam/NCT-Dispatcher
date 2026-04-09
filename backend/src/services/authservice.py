@@ -25,7 +25,7 @@ class User:
     key_id: int
 
 
-class AuthServiceBase(HttpMakerAsyncImproved):
+class AuthService(HttpMakerAsyncImproved):
     def __init__(self):
         super().__init__(
             base_url=settings.AUTH_URL,
@@ -35,32 +35,6 @@ class AuthServiceBase(HttpMakerAsyncImproved):
             },
             parse_method=self._get_simple_response,
         )
-
-    async def login(self, name: str, password: str) -> AuthToken:
-        return AuthToken('test_access_token', 'test_refresh_token')
-
-    async def logout(self, name: str) -> bool:
-        return True
-
-    async def refresh(self, refresh_token: str) -> AuthToken:
-        return AuthToken('test_access_token', 'test_refresh_token')
-
-    async def register(self, name: str, password: str, key: str) -> bool:
-        return True
-
-    async def user_by_id(self, user_id: int, redis: RedisClient) -> User:
-        return User(
-            id=user_id,
-            name='',
-            is_admin=True,
-            is_active=True,
-            last_active=datetime.now(),
-            key_id=0
-        )
-
-class AuthService(AuthServiceBase):
-    def __init__(self):
-        super().__init__()
 
     async def login(self, name: str, password: str) -> AuthToken:
         ans = await self._make('/v1/auth/login', method='POST', json={'name': name, 'password': password})
@@ -109,4 +83,4 @@ class AuthService(AuthServiceBase):
         return User(**ans.json)
 
 
-auth_service = AuthService() if not settings.DEBUG else AuthServiceBase()
+auth_service = AuthService()

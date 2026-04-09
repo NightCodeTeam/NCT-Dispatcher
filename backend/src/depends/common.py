@@ -13,11 +13,10 @@ from core.redis_client import RedisDep
 class Common:
     user: UserDep
     db: DBDep
-    redis: RedisDep
 
 
-def get_common_dep(user: UserDep, db: DBDep, redis: RedisDep) -> Common:
-    return Common(user=user, db=db, redis=redis)
+def get_common_dep(user: UserDep, db: DBDep) -> Common:
+    return Common(user=user, db=db)
 
 
 CommonDep = Annotated[Common, Depends(get_common_dep)]
@@ -27,12 +26,11 @@ CommonDep = Annotated[Common, Depends(get_common_dep)]
 class CommonApp:
     user: UserDep
     db: DBDep
-    redis: RedisDep
     app: AppDep
 
 
-def get_common_app_dep(user: UserDep, db: DBDep, redis: RedisDep, app: AppDep) -> CommonApp:
-    return CommonApp(user=user, db=db, redis=redis, app=app)
+def get_common_app_dep(user: UserDep, db: DBDep, xapp: AppDep) -> CommonApp:
+    return CommonApp(user=user, db=db, app=app)
 
 
 CommonAppDep = Annotated[CommonApp, Depends(get_common_app_dep)]

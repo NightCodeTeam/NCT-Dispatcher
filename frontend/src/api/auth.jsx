@@ -16,7 +16,7 @@ export const auth_service = {
         return (await api.post('/v1/auth/login', {
             name: username,
             password: password,
-        })).data?.ok || false;
+        })).data || null;
     },
 
     // Выход

@@ -21,7 +21,7 @@ incidents_router_v1 = APIRouter(prefix='/v1/incidents', tags=['incidents'])
 @incidents_router_v1.get('/', response_model=MultipleIncidentResponse)
 @cache(key='incidents:all_incident')
 @rate_limiter(max_requests=10, time_delta=30)
-async def all_incidents(pagination: PaginationParams, common: CommonDep):
+async def all_incidents(pagination: PaginationParams, common: CommonDep, redis: RedisDep):
     if pagination.limit is not None and pagination.skip is not None:
         incidents = await common.db.incidents.pagination(
             skip=pagination.skip,
@@ -41,7 +41,7 @@ async def all_incidents(pagination: PaginationParams, common: CommonDep):
         'created_at': i.created_at,
         'updated_at': i.updated_at,
         'edit_by_user': await AuthService().user_by_id(
-            i.edit_by_id, common.redis
+            i.edit_by_id, redis
         ) if i.edit_by_id else None
     } for i in incidents]}
 
@@ -61,7 +61,7 @@ async def post_incident(incident: IncidentRequest, app: AppDep, db: DBDep):
 @incidents_router_v1.get('/{incident_id}', response_model=IncidentResponse)
 @cache(key='incidents:by_id')
 @rate_limiter(max_requests=10, time_delta=30)
-async def incident_by_id(incident_id: int, common: CommonDep):
+async def incident_by_id(incident_id: int, common: CommonDep, redis: RedisDep):
     inc = await common.db.incidents.by_id(incident_id=incident_id, load_relations=True)
     if inc is None:
         raise HTTPException(status_code=404, detail=f'Incident {incident_id} not found')
@@ -75,7 +75,7 @@ async def incident_by_id(incident_id: int, common: CommonDep):
         'app_name': inc.app.name,
         'created_at': inc.created_at,
         'updated_at': inc.updated_at,
-        'edit_by_user': await AuthService().user_by_id(inc.edit_by_id, common.redis) if inc.edit_by_id else None
+        'edit_by_user': await AuthService().user_by_id(inc.edit_by_id, redis) if inc.edit_by_id else None
     }
 
 
@@ -92,16 +92,15 @@ async def del_incident_by_id(db: DBDep, user: UserDep, incident_id: int):
 
 @incidents_router_v1.put('/{incident_id}/status', response_model=Ok)
 async def update_status(
-    db: DBDep,
-    user: UserDep,
+    common: CommonDep,
     incident_id: int,
     status_req: NewStatusRequest
 ):
     try:
-        return {'ok': await db.incidents.update_status(
+        return {'ok': await common.db.incidents.update_status(
             incident_id=incident_id,
             new_status=status_req.new_status,
-            updated_by_id=user.id,
+            updated_by_id=common.user.id,
         )}
     except ItemNotFound:
         raise HTTPException(status_code=404, detail='Incident not found')

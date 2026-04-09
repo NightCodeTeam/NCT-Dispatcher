@@ -32,8 +32,10 @@ token_types = Literal['access', 'refresh']
 
 
 class AuthHandler:
+    """Промежуточный класс авторизации между приложением и auth_service"""
+
     jwt = SimpleJWT(secret_key=settings.AUTH_SECRET_KEY, algorithm=settings.AUTH_ALGORITHM)
-    """Промежуточный класс авторизации между fastapi и auth_service"""
+
     @staticmethod
     async def __valid_token_data(token: TokenData, token_key: token_types, host: str):
         """
@@ -59,6 +61,9 @@ class AuthHandler:
 
     @staticmethod
     def __set_tokens(response: Response, access_token: str, refresh_token: str):
+        """
+        Установка токенов в куки
+        """
         response.set_cookie(
             key='access_token',
             value=access_token,
@@ -77,6 +82,9 @@ class AuthHandler:
         )
 
     async def __create_new_tokens(self, response: Response, refresh_token: str):
+        """
+        Создание новых токенов
+        """
         new_tokens = await auth_service.refresh(refresh_token)
         self.__set_tokens(response, new_tokens.access_token, new_tokens.refresh_token)
 
@@ -117,11 +125,17 @@ class AuthHandler:
         )
 
     async def login(self, user: UserLogin, response: Response) -> bool:
+        """
+        Авторизация пользователя
+        """
         tokens = await auth_service.login(name=user.name, password=user.password)
         self.__set_tokens(response, tokens.access_token, tokens.refresh_token)
         return True
 
     async def register(self, request: Request, user: UserRegister) -> bool:
+        """
+        Регистрация пользователя
+        """
         if user.key != settings.APP_ACCESS_KEY:
             await blocklist_service.ban(
                 ip=request.client.host,
@@ -138,6 +152,9 @@ class AuthHandler:
         )
 
     async def logout(self, user: User, response: Response) -> bool:
+        """
+        Выход пользователя
+        """
         ans = await auth_service.logout(user.name)
         if ans:
             response.delete_cookie("access_token")

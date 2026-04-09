@@ -11,19 +11,15 @@ import {Login} from "./pages/auth/login.jsx";
 import {Logout} from "./pages/auth/logout.jsx";
 import {Register} from "./pages/auth/register.jsx";
 import {AuthOutlet} from "./pages/auth/outlet.jsx";
-import auth_service from "./api/auth.jsx";
 import Dashboard from "./pages/dashboard.jsx";
 import AppsView from "./pages/apps/apps.jsx";
 import IncidentsView from "./pages/incidents/incidents.jsx";
+import { useAuth } from "./components/auth/provider.jsx";
 
 
 function App() {
     const [theme, set_theme] = useState(localStorage.getItem('theme') || 'dark');
-    const [user, set_username] = useState(get_user())
-
-    async function get_user() {
-        return await auth_service.user() || ''
-    }
+    const {user, loading} = useAuth();
 
     if (user === '' && window.location.pathname !== '/auth/login') {
         window.location.href = '/auth/login';
