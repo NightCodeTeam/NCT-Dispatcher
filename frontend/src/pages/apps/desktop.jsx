@@ -1,6 +1,6 @@
 import {useState} from "react";
-import PaginationTable from "../../components/utils/custom_tables.jsx";
-import apps_service from "../../api/apps.jsx";
+import PaginationTable from "@/components/utils/custom_tables.jsx";
+import apps_service from "@/api/apps.jsx";
 
 
 const AppHead = () => {
@@ -141,6 +141,7 @@ const NewAppWindow = ({on_close}) => {
     const [new_name, set_name] = useState('');
     const [new_status, set_status] = useState('');
     const [new_folder, set_folder] = useState('');
+    const [new_script, set_script] = useState('');
 
     const handleOuterClick = () => {
         on_close(false);
@@ -168,6 +169,7 @@ const NewAppWindow = ({on_close}) => {
                 <input type='text' style={{padding: 5, width: '30em'}} className='rounded_border' placeholder='Название' value={new_name} onChange={(e) => set_name(e.target.value)}/>
                 <input type='text' style={{padding: 5, width: '30em'}} className='rounded_border' placeholder='Статус URL' value={new_status} onChange={(e) => set_status(e.target.value)}/>
                 <input type='text' style={{padding: 5, width: '30em'}} className='rounded_border' placeholder='Папка логов (полный путь)' value={new_folder} onChange={(e) => set_folder(e.target.value)}/>
+                <input type='text' style={{padding: 5, width: '30em'}} className='rounded_border' placeholder='Скрипт запуска (полный путь)' value={new_script} onChange={(e) => set_script(e.target.value)}/>
                 <input type='submit' style={{padding: 5}} className='rounded_border' value='Создать'/>
             </form>
         </div>
@@ -183,6 +185,7 @@ const NewAppWindow = ({on_close}) => {
                 <input type='text' style={{padding: 5, width: '100%'}} className='rounded_border' placeholder='Название' value={new_name} onChange={(e) => set_name(e.target.value)}/>
                 <input type='text' style={{padding: 5, width: '100%'}} className='rounded_border' placeholder='Статус URL' value={new_status} onChange={(e) => set_status(e.target.value)}/>
                 <input type='text' style={{padding: 5, width: '100%'}} className='rounded_border' placeholder='Папка логов (полный путь)' value={new_folder} onChange={(e) => set_folder(e.target.value)}/>
+                <input type='text' style={{padding: 5, width: '30em'}} className='rounded_border' placeholder='Скрипт запуска (полный путь)' value={new_script} onChange={(e) => set_script(e.target.value)}/>
                 <input type='submit' style={{padding: 5}} className='rounded_border' value='Создать'/>
             </form>
         </div>

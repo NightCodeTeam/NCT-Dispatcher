@@ -13,3 +13,7 @@ class Token(BaseModel):
 
 class UserResponse(BaseModel):
     username: str
+
+
+class User(BaseModel):
+    name: str | None = None

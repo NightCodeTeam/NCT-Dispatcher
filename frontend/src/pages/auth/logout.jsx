@@ -1,16 +1,17 @@
 import { useEffect } from "react";
-import auth_service from "../../api/auth.jsx";
+import { useAuth } from "@/context/auth.jsx";
 
-export const Logout = ({set_username}) => {
 
-        const handletest = async () => {
-            await auth_service.logout()
-            set_username('')
-        }
+export const LogoutPage = () => {
+    const {logout} = useAuth()
 
-        useEffect(() => {
-            handletest();
-        }, []);
+    const handleLogout = async () => {
+        await logout();
+    }
+
+    useEffect(() => {
+        handleLogout();
+    }, []);
 
     return <div>Всего хорошего!</div>
 }

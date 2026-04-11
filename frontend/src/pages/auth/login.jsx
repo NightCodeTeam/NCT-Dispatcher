@@ -1,13 +1,10 @@
 import { useState } from 'react';
-import { auth_service } from '../../api/auth';
-import {
-    Link,
-    useNavigate,
-} from "react-router-dom"
-import {LoadingAnimation} from "../../components/utils/loading_animation.jsx";
+import {Link, useNavigate} from "react-router-dom"
+import {LoadingAnimation} from "@/components/utils/loading_animation.jsx";
+import {useAuth} from "@/context/auth.jsx";
 
 
-export const Login = ({set_username}) => {
+export const LoginPage = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
@@ -15,6 +12,8 @@ export const Login = ({set_username}) => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const {login} = useAuth()
 
     const handleChange = (e) => {
         setFormData({
@@ -29,11 +28,11 @@ export const Login = ({set_username}) => {
         setError('');
 
         try {
-            if (await auth_service.login(formData.username, formData.password)) {
-                set_username(formData.username);
-                navigate('/calc')
-            }
+            await login(formData.username, formData.password)
+
+            navigate('/')
         } catch (error) {
+            console.log(error)
             setError(error.response?.data?.detail || 'Непредвиденная ошибка');
         } finally {
             setLoading(false);

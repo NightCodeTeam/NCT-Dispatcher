@@ -3,11 +3,12 @@ import api from './main.jsx'
 
 export const incidents_service = {
     all_incidents: async (skip_= 0, limit_= 10) => {
-        return (await api.get(`v1/incidents/`, {
+        return (await api.get(`v1/incidents`, {
             params: {
                 skip: skip_,
                 limit: limit_,
-            }
+            },
+            withCredentials: true
         })).data.incidents.sort((a, b) => b.created_at.localeCompare(a.created_at)) || []
     },
 

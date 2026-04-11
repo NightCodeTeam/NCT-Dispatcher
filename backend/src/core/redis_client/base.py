@@ -2,6 +2,7 @@ from typing import Any, List, Tuple
 import json
 
 import redis.asyncio as redis
+from redis.exceptions import ConnectionError
 
 from .exceptions import RedisConnectionError, UnsupportedAnswer, UnsupportedType
 
@@ -92,17 +93,23 @@ class RedisClient:
         )
 
     async def set_json(self, key: str, data: dict):
-        await self.__client.set(
-            self.__insert_prefix_key(key),
-            json.dumps(data),
-            ex=self.__expire
-        )
+        try:
+            await self.__client.set(
+                self.__insert_prefix_key(key),
+                json.dumps(data),
+                ex=self.__expire
+            )
+        except ConnectionError:
+            return None
 
     async def get_json(self, key: str, spec_app_prefix: str | None = None) -> dict | None:
         key = self.__insert_prefix_key(key, spec_app_prefix=spec_app_prefix)
-        data = await self.__client.get(
-            key
-        )
+        try:
+            data = await self.__client.get(
+                key
+            )
+        except ConnectionError:
+            return None
         if data is None:
             return None
         return json.loads(data)

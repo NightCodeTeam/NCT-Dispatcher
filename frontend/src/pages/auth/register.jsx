@@ -7,7 +7,7 @@ import {
 } from "react-router-dom"
 
 
-export const Register = () => {
+export const RegisterPage = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',

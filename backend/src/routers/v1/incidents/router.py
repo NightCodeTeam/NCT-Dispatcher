@@ -18,7 +18,7 @@ from settings import settings
 incidents_router_v1 = APIRouter(prefix='/v1/incidents', tags=['incidents'])
 
 
-@incidents_router_v1.get('/', response_model=MultipleIncidentResponse)
+@incidents_router_v1.get('', response_model=MultipleIncidentResponse)
 @cache(key='incidents:all_incident')
 @rate_limiter(max_requests=10, time_delta=30)
 async def all_incidents(pagination: PaginationParams, common: CommonDep, redis: RedisDep):

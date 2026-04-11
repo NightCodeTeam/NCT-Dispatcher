@@ -1,3 +1,5 @@
+import logging
+
 from core.requests_makers import HttpMakerAsyncImproved
 from core.redis_client import RedisClient
 
@@ -5,6 +7,10 @@ from src.settings import settings
 
 
 class BlocklistServiceBase(HttpMakerAsyncImproved):
+    """
+    Базовый сервис блокировки IP-адресов. Используется только для тестов.
+    """
+
     def __init__(self):
         super().__init__(
             base_url=settings.BLOCKER_URL,
@@ -15,6 +21,7 @@ class BlocklistServiceBase(HttpMakerAsyncImproved):
         )
 
     async def in_ban(self, ip: str, redis: RedisClient) -> bool:
+        print(f'{self.__class__.__name__} > in_ban({ip})')
         return False
 
     async def ban(
@@ -24,10 +31,18 @@ class BlocklistServiceBase(HttpMakerAsyncImproved):
         permanent: bool = False,
         white: bool = False
     ) -> bool:
+        """
+        Блокировка IP-адреса.
+        """
+        print(f'{self.__class__.__name__} > ban({ip}, reason={reason}, duration_days={duration_days}, permanent={permanent}, white={white})')
         return True
 
 
 class BlocklistService(BlocklistServiceBase):
+    """
+    Сервис блокировки IP-адресов.
+    """
+
     def __init__(self):
         super().__init__()
 

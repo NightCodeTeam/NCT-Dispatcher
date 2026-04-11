@@ -8,6 +8,7 @@ from src.core.redis_client import RedisDep
 from src.core.fast_depends import PaginationParams
 from src.core.sql_repository import ItemNotFound
 from src.depends import DBDep, UserDep, CommonAppDep, CommonDep
+from src.handlers.apps import AppHandler
 from .models import NewAppRequest, MultipleAppsResponse, AppMultipleLogFilesResponse, AppResponse
 
 
@@ -18,14 +19,7 @@ apps_router_v1 = APIRouter(prefix='/v1/apps', tags=['apps'])
 @cache(key='apps:all')
 @rate_limiter(max_requests=10, time_delta=30)
 async def all_apps(pagination: PaginationParams, common: CommonDep, redis: RedisDep):
-    if pagination.limit is not None and pagination.skip is not None:
-        apps = await common.db.apps.pagination(
-            skip=pagination.skip,
-            limit=pagination.limit,
-            load_relations=True,
-        )
-    else:
-        apps = await common.db.apps.all(load_relations=True)
+    apps = await AppHandler(common.db).all_apps(skip=pagination.skip, limit=pagination.limit)
     return {'apps': [{
     	'id': i.id,
     	'name': i.name,

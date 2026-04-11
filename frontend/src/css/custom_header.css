@@ -1,7 +1,16 @@
+.header_container {
+    height: 100%;
+    background-color: inherit;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+}
+
 .header_a {
     height: 100%;
 
     color: var(--header-text-color);
+    background-color: inherit;
     font-size: 20px;
 
     padding: 0 5px;
@@ -12,6 +21,7 @@
 
     border: 0 solid var(--header-color);
 
+    text-decoration: none;
     cursor: pointer;
 }
 .header_a_c {
@@ -34,4 +44,76 @@
     user-select: none;
     background-color: var(--header-current-color);
     color: var(--header-current-text-color);
+}
+
+.header_no_click {
+    height: 100%;
+
+    color: var(--header-text-color);
+    background-color: inherit;
+    font-size: 20px;
+
+    padding: 0 5px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    text-decoration: none;
+    user-select: none;
+}
+
+.header_a_theme {
+    height: 100%;
+
+    color: var(--header-text-color);
+    background-color: var(--header-color);
+
+    padding: 0;
+    margin-left: auto;
+    margin-right: 10px;
+
+    border-width: 0;
+
+    user-select: none;
+}
+
+.header_a_theme_icon {
+    height: 80%;
+    width: 80%;
+
+    color: var(--header-text-color);
+    background-color: var(--header-color);
+
+    margin: auto;
+
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.header_overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7); /* Затемнение */
+    z-index: 9998; /* Высокий z-index, но ниже контента */
+    backdrop-filter: blur(2px); /* Дополнительный эффект размытия */
+}
+
+.header_overlay-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-width: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 9999; /* Самый высокий z-index */
+    overflow: auto;
+    max-width: 90%;
+    max-height: 90vh;
 }

@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Depends, Request, Response
 
-from src.handlers.auth import AuthHandler, User
+from src.handlers import AuthHandler, User
 
 
 async def verify_access_token(request: Request, response: Response) -> User:

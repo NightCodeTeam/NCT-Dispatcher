@@ -1,14 +1,14 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import { useNavigate, } from "react-router-dom"
 import auth_service from '@/api/auth.jsx';
 
 
 const AuthContext = createContext({});
 
-export const AuthProvider = ({ children }) => {
-    const navigate = useNavigate();
 
-    const [user, set_user] = useState(null);
+export function AuthProvider({ children }) {
+    const [user, set_user] = useState({
+        name: null
+    });
     const [loading, set_loading] = useState(true);
 
     const check_auth = async () => {
@@ -16,8 +16,7 @@ export const AuthProvider = ({ children }) => {
             set_user(await auth_service.user())
         } catch (error) {
             if (error.status === 401) {
-                set_user(null);
-                navigate('/auth/login');
+                set_user({name: null});
             }
         } finally {
             set_loading(false);
@@ -30,10 +29,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (name, password) => {
         const data = await auth_service.login(name, password);
-        if (data !== null) {
-            set_user(data)
-        }
-        return data;
+        set_user(data)
     };
 
     const logout = async () => {
@@ -52,6 +48,6 @@ export const AuthProvider = ({ children }) => {
             {children}
         </AuthContext.Provider>
     );
-};
+}
 
 export const useAuth = () => useContext(AuthContext);

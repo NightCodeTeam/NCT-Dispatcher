@@ -1,46 +1,52 @@
-import { useState } from 'react'
 import {
     BrowserRouter,
     Routes,
-    Route,
+    Route, Navigate,
 } from "react-router-dom";
 
 import './css/style.css';
+import {useTheme} from "@/context/theme.jsx"
+import CustomHeader from "@/components/utils/custom_header.jsx";
 
-import {Login} from "./pages/auth/login.jsx";
-import {Logout} from "./pages/auth/logout.jsx";
-import {Register} from "./pages/auth/register.jsx";
-import {AuthOutlet} from "./pages/auth/outlet.jsx";
-import Dashboard from "./pages/dashboard.jsx";
-import AppsView from "./pages/apps/apps.jsx";
-import IncidentsView from "./pages/incidents/incidents.jsx";
-import { useAuth } from "./components/auth/provider.jsx";
+import {LoginPage} from "@/pages/auth/login.jsx";
+import {LogoutPage} from "@/pages/auth/logout.jsx";
+import {RegisterPage} from "@/pages/auth/register.jsx";
+import {AuthOutlet} from "@/pages/auth/outlet.jsx";
+import {UserPage} from "@/pages/auth/user.jsx";
+
+import AppsView from "@/pages/apps/desktop.jsx";
+import IncidentsView from "@/pages/incidents/incidents.jsx";
 
 
 function App() {
-    const [theme, set_theme] = useState(localStorage.getItem('theme') || 'dark');
-    const {user, loading} = useAuth();
+    const {theme} = useTheme();
 
-    if (user === '' && window.location.pathname !== '/auth/login') {
-        window.location.href = '/auth/login';
-    }
+    const headers = [
+        {
+            path: '/apps',
+            label: 'Приложения',
+        },
+        {
+            path: '/incidents',
+            label: 'Инциденты'
+        },
+    ]
 
     return (
         <BrowserRouter>
             <div className='App' data-theme={theme}>
-                <div>
-                    <Routes>
-                        <Route path="/" element={<Dashboard />}>
-                            <Route path="" element={<IncidentsView />}/>
-                            <Route path="apps" element={<AppsView />}/>
-                        </Route>
-                        <Route path="/auth" element={<AuthOutlet />}>
-                            <Route path="login" element={<Login />}/>
-                            <Route path="logout" element={<Logout />}/>
-                            <Route path="register" element={<Register />}/>
-                        </Route>
-                    </Routes>
-                </div>
+                <CustomHeader headers={headers}/>
+                <Routes>
+                    <Route path="/" element={<Navigate to={'/incidents'}/>}/>
+                    <Route path="/apps" element={<AppsView />}/>
+                    <Route path="/incidents" element={<IncidentsView />}/>
+                    <Route path="/auth" element={<AuthOutlet />}>
+                        <Route path="login" element={<LoginPage />}/>
+                        <Route path="logout" element={<LogoutPage />}/>
+                        <Route path="register" element={<RegisterPage />}/>
+                        <Route path="user" element={<UserPage />}/>
+                    </Route>
+                </Routes>
             </div>
         </BrowserRouter>
     )

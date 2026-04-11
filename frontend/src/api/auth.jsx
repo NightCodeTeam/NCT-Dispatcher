@@ -27,9 +27,9 @@ export const auth_service = {
 
     user: async () => {
         if (window.location.pathname.startsWith('/auth')){
-            return ''
+            return {name: null}
         }
-        return await api.get('/v1/auth/who_am_i') || ''
+        return (await api.get('/v1/auth/who_am_i'))?.data || {name: null}
     },
 
     // Проверка авторизации

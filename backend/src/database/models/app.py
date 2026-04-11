@@ -12,6 +12,7 @@ class App(Base):
     code: Mapped[str] = mapped_column(unique=True, nullable=False)
 
     status_url: Mapped[str] = mapped_column(nullable=True)
+    status_access_code: Mapped[str] = mapped_column(nullable=True)
     logs_folder: Mapped[str] = mapped_column(nullable=True)
     script_path: Mapped[str] = mapped_column(nullable=True)
 

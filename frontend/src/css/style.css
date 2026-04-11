@@ -7,37 +7,47 @@
 
 
 :root {
-    --bg-color: #FFFFFF;
-    --text-color: #1F1F1F;
-    --border-color: #E5E5E5;
-    --button-color: #FFFFFF;
-    --button-color-hover: #cfcfcf;
-    --button-disabled: #c5c5c5;
-    --button-pressed: #1677FF;
+    --bg-color: #f5f5f5;
+    --text-color: #2b2b2b;
 
-    --header-color: #001529;
-    --header-text-color: #A6ADB4;
-    --header-current-color: #1677FF;
+    --border-color: #2b2b2b;
+
+    --button-text-color: #2b2b2b;
+    --button-background-color: #f5f5f5;
+    --button-hover-border-color: #396cd8;
+    --button-active-border-color: #396cd8;
+    --button-active-background-color: #0f0f0f69;
+    --button-disabled: #acacac;
+    --button-pressed: #105dcc;
+
+    --header-color: #0a46e4;
+    --header-text-color: #dadada;
+    --header-current-color: #356dff;
     --header-current-text-color: #FFFFFF;
 
-    --win-info-cont-color: #e6f2ff;
-    --win-info-text-color: #0d47a1;
-    --win-warning-cont-color: #fff8e1;
-    --win-warning-text-color: #e65100;
+    --win-info-cont-color: #0a1929;
+    --win-info-text-color: #90caf9;
+
+    --win-warning-cont-color: #2a2100;
+    --win-warning-text-color: #ffd54f;
 }
 
 [data-theme="dark"] {
     --bg-color: #121212;
-    --text-color: #eaeaea;
-    --border-color: #E5E5E5;
-    --button-color: #232323;
-    --button-color-hover: #3a3a3a;
-    --button-disabled: #3c3c3c;
-    --button-pressed: #1677FF;
+    --text-color: #f6f6f6;
+    --border-color: #787878;
+    --button-color: #3c3c3c;
+    --button-background-color:  #0f0f0f98;
+    --button-hover-border-color: #396cd8;
+    --button-active-border-color: #396cd8;
+    --button-active-background-color: #0f0f0f69;
 
-    --header-color: #00070F;
+    --button-disabled: #202020;
+    --button-pressed: #0b418e;
+
+    --header-color: #0c0c0c;
     --header-text-color: #A6ADB4;
-    --header-current-color: #0A3572;
+    --header-current-color: #656565;
     --header-current-text-color: #FFFFFF;
 
     --win-info-cont-color: #0a1929;
