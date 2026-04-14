@@ -1,12 +1,15 @@
 import {useState} from "react";
 import PaginationTable from "@/components/utils/custom_tables.jsx";
 import apps_service from "@/api/apps.jsx";
+import back_service from "@/api/main.jsx";
+import NewAppForm from "@/components/apps/new_form.jsx";
+import useDevice from "@/context/mobile.jsx";
 
 
 const AppHead = () => {
     return <tr>
         <th style={{textAlign: 'left'}}>Название</th>
-        <th style={{textAlign: 'right'}}>Кол-во инцидентов</th>
+        <th style={{textAlign: 'right'}}>Инцидентов</th>
     </tr>
 }
 
@@ -138,10 +141,15 @@ const AppDetail = ({data, on_close, update}) => {
 
 
 const NewAppWindow = ({on_close}) => {
-    const [new_name, set_name] = useState('');
-    const [new_status, set_status] = useState('');
-    const [new_folder, set_folder] = useState('');
-    const [new_script, set_script] = useState('');
+    const {isMobile} = useDevice()
+
+    const [formData, setFormData] = useState({
+        name: '',
+        status_url: '',
+        status_code: null,
+        logs_folder: null,
+        script: null,
+    });
 
     const handleOuterClick = () => {
         on_close(false);
@@ -151,44 +159,35 @@ const NewAppWindow = ({on_close}) => {
         e.stopPropagation();
     };
 
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+        });
+    };
+
     const form_submit = async () => {
-        await apps_service.new_app(
-            new_name,
-            new_status,
-            new_folder,
-        )
+        if (formData.name !== '' && formData.status_url !== '') {
+            await back_service.apps.new(formData)
+        }
     }
 
     return <div className='overlay-backdrop' onClick={handleOuterClick}>
-        <div className='overlay-content base_flex_column rounded_border base_margins desktop' onClick={handleInnerClick}>
-            <form className='base_flex_column' onSubmit={() => form_submit()} style={{
-                maxWidth: '50em',
-                padding: '5px',
-                alignItems: 'flex-start',
+        {isMobile ? (
+            <div className='overlay-content base_flex_column rounded_border' onClick={handleInnerClick} style={{
+                minWidth: '85vw',
+                maxWidth: '90vw',
             }}>
-                <input type='text' style={{padding: 5, width: '30em'}} className='rounded_border' placeholder='Название' value={new_name} onChange={(e) => set_name(e.target.value)}/>
-                <input type='text' style={{padding: 5, width: '30em'}} className='rounded_border' placeholder='Статус URL' value={new_status} onChange={(e) => set_status(e.target.value)}/>
-                <input type='text' style={{padding: 5, width: '30em'}} className='rounded_border' placeholder='Папка логов (полный путь)' value={new_folder} onChange={(e) => set_folder(e.target.value)}/>
-                <input type='text' style={{padding: 5, width: '30em'}} className='rounded_border' placeholder='Скрипт запуска (полный путь)' value={new_script} onChange={(e) => set_script(e.target.value)}/>
-                <input type='submit' style={{padding: 5}} className='rounded_border' value='Создать'/>
-            </form>
-        </div>
-        <div className='mobile' style={{
-            marginTop: '50px',
-            padding: '5px 0',
-            boxSizing: 'border-box',
-        }} onClick={handleInnerClick}>
-            <form className='base_flex_column' onSubmit={() => form_submit()} style={{
-                width: '100%',
-                alignItems: 'flex-start',
+                <NewAppForm formData={formData} form_submit={form_submit} handleChange={handleChange}/>
+            </div>
+        ):(
+            <div className='overlay-content base_flex_column rounded_border' onClick={handleInnerClick} style={{
+                minWidth: '50vw',
+                maxWidth: '90vw',
             }}>
-                <input type='text' style={{padding: 5, width: '100%'}} className='rounded_border' placeholder='Название' value={new_name} onChange={(e) => set_name(e.target.value)}/>
-                <input type='text' style={{padding: 5, width: '100%'}} className='rounded_border' placeholder='Статус URL' value={new_status} onChange={(e) => set_status(e.target.value)}/>
-                <input type='text' style={{padding: 5, width: '100%'}} className='rounded_border' placeholder='Папка логов (полный путь)' value={new_folder} onChange={(e) => set_folder(e.target.value)}/>
-                <input type='text' style={{padding: 5, width: '30em'}} className='rounded_border' placeholder='Скрипт запуска (полный путь)' value={new_script} onChange={(e) => set_script(e.target.value)}/>
-                <input type='submit' style={{padding: 5}} className='rounded_border' value='Создать'/>
-            </form>
-        </div>
+                <NewAppForm formData={formData} form_submit={form_submit} handleChange={handleChange}/>
+            </div>
+        )}
     </div>
 }
 
