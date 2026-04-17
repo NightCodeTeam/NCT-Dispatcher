@@ -1,6 +1,6 @@
-import incidents_service from "../../api/incidents.jsx";
-import {not_to_long_text} from "../../components/utils/string_line.jsx";
-import PaginationTable from "../../components/utils/custom_tables.jsx";
+import back_service from "@/api/main.jsx";
+import {not_to_long_text} from "@/components/utils/string_line.jsx";
+import PaginationTable from "@/components/utils/custom_tables.jsx";
 
 
 function get_level(data) {
@@ -57,12 +57,12 @@ const IncDetails = ({data, on_close, update}) => {
     const date = new Date(data.created_at);
 
     const change_status = async () => {
-        await incidents_service.update_incident(data.id, data.status === 'open' ? 'closed': 'open')
+        await back_service.incidents.update(data.id, data.status === 'open' ? 'closed': 'open')
         update()
     }
 
     const delete_inc = async () => {
-        await incidents_service.del_incident(data.id)
+        await back_service.incidents.del(data.id)
         update()
     }
 
@@ -222,10 +222,10 @@ const IncLine = ({data, update, action_on_click}) => {
 }
 
 
-const IncidentsView = () => {
-    return <div style={{boxSizing: 'border-box'}}>
-        <PaginationTable CustomHead={IncHead} Line={IncLine} Detail={IncDetails} api_request={incidents_service.all_incidents}/>
+const IncidentsPage = () => {
+    return <div style={{width: '100%', maxWidth: '50em', padding: 5}}>
+        <PaginationTable CustomHead={IncHead} Line={IncLine} Detail={IncDetails} api_request={back_service.incidents.all}/>
     </div>
 }
 
-export default IncidentsView;
+export default IncidentsPage;

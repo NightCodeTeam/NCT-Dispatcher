@@ -1,10 +1,9 @@
 from datetime import datetime
 from typing import Literal, Optional
 
-from core.debug.debug_dataclass import Level
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy import ForeignKey
-from ..database import Base
+from src.database import Base
 
 
 class Incident(Base):
@@ -14,7 +13,7 @@ class Incident(Base):
     title: Mapped[str]
     message: Mapped[str]
     logs: Mapped[str]
-    level: Mapped[Level]
+    level: Mapped[Literal['debug', 'warning', 'info', 'error', 'crit']]
 
     status: Mapped[Literal['open', 'closed']] = mapped_column(default='open')
 

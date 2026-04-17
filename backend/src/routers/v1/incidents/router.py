@@ -1,13 +1,11 @@
 from fastapi import APIRouter, HTTPException
 
-from src.core.pydantic_misc_models import Ok
-from src.core.fast_decorators import cache, rate_limiter
-from src.core.redis_client import RedisDep
+from core.pydantic_misc_models import Ok
+from core.fast_decorators import cache, rate_limiter
+from core.redis_client import RedisDep
+from core.fast_depends import PaginationParams
+from core.sql_repository import ItemNotFound
 from src.depends import UserDep, DBDep, AppDep, CommonDep
-from src.core.fast_depends import PaginationParams
-from src.core.debug import logger
-from src.core.telegrambot import TeleBot, BotMessage
-from src.core.sql_repository import ItemNotFound
 from src.services.authservice import AuthService
 from .models import IncidentRequest, MultipleIncidentResponse, IncidentResponse
 from .models import NewStatusRequest

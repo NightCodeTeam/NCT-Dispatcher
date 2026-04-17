@@ -14,8 +14,8 @@ import {RegisterPage} from "@/pages/auth/register.jsx";
 import {AuthOutlet} from "@/pages/auth/outlet.jsx";
 import {UserPage} from "@/pages/auth/user.jsx";
 
-import AppsView from "@/pages/apps/desktop.jsx";
-import IncidentsView from "@/pages/incidents/incidents.jsx";
+import AppsPage from "@/pages/apps.jsx";
+import IncidentsPage from "@/pages/incidents.jsx";
 
 
 function App() {
@@ -38,8 +38,8 @@ function App() {
                 <CustomHeader headers={headers}/>
                 <Routes>
                     <Route path="/" element={<Navigate to={'/incidents'}/>}/>
-                    <Route path="/apps" element={<AppsView />}/>
-                    <Route path="/incidents" element={<IncidentsView />}/>
+                    <Route path="/apps" element={<AppsPage />}/>
+                    <Route path="/incidents" element={<IncidentsPage />}/>
                     <Route path="/auth" element={<AuthOutlet />}>
                         <Route path="login" element={<LoginPage />}/>
                         <Route path="logout" element={<LogoutPage />}/>

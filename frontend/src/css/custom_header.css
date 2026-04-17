@@ -23,6 +23,7 @@
 
     text-decoration: none;
     cursor: pointer;
+    user-select: none;
 }
 .header_a_c {
     height: 10vh;
@@ -40,6 +41,7 @@
 
     text-decoration: none;
     cursor: pointer;
+    user-select: none;
 }
 
 .header_a:hover, .header_a_c:hover {

@@ -4,6 +4,7 @@
 @import "custom_header.css";
 @import "loading.css";
 @import "overlay.css";
+@import "select_dropdown.css";
 
 
 :root {
@@ -35,13 +36,14 @@
 [data-theme="dark"] {
     --bg-color: #121212;
     --text-color: #f6f6f6;
-    --border-color: #787878;
-    --button-color: #3c3c3c;
-    --button-background-color:  #0f0f0f98;
+
+    --border-color: #f6f6f6;
+
+    --button-text-color: #f6f6f6;
+    --button-background-color:  #121212;
     --button-hover-border-color: #396cd8;
     --button-active-border-color: #396cd8;
     --button-active-background-color: #0f0f0f69;
-
     --button-disabled: #202020;
     --button-pressed: #0b418e;
 

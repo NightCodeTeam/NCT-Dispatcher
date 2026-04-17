@@ -1,0 +1,81 @@
+.select-dropdown {
+    position: relative;
+    width: 100%;
+    max-width: 75px;
+    user-select: none;
+}
+
+.select-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.select-header:hover {
+    border-color: #9ca3af;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.select-header span {
+    font-weight: 500;
+}
+
+.arrow {
+    transition: transform 0.2s ease;
+}
+
+.arrow.open {
+    transform: rotate(180deg);
+}
+
+.select-options {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 4px 0;
+    list-style: none;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.select-option {
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    font-size: 16px;
+    color: #374151;
+}
+
+.select-option:hover {
+    background-color: #f3f4f6;
+}
+
+.select-option.selected {
+    background-color: #eff6ff;
+    color: #2563eb;
+    font-weight: 500;
+}
+
+/* Анимация появления */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.select-options {
+    animation: slideDown 0.2s ease-out;
+}

@@ -5,22 +5,22 @@ from typing import Literal
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.sql_repository import Repository, ItemNotFound
-from database.models.incident import Incident
+from core.sql_repository import RepositoryObj, ItemNotFound
+from src.database.models.incident import Incident
 
 
-class IncidentRepo(Repository):
+class IncidentRepo(RepositoryObj):
     def __init__(self, session: AsyncSession):
         super().__init__(Incident, session=session, relationships=('edit_by', 'app'))
 
     async def by_id(self, incident_id: int, load_relations: bool = True) -> Incident | None:
         return await self.get(
-            _filter=f'{self.table_name}.id={incident_id}',
+            filter_=Incident.id == incident_id,
             load_relations=load_relations,
         )
 
     async def by_app_id(self, app_id: int) -> tuple[Incident, ...]:
-        return await self.some(f'{self.table_name}.app_id={app_id}')
+        return await self.some(Incident.id == app_id)
 
     async def new(
         self,
@@ -67,10 +67,10 @@ class IncidentRepo(Repository):
         return True
 
     async def only_open(self, limit: int | None = None):
-        return await self.some(f"{self.table_name}.status='open'", limit=limit)
+        return await self.some(Incident.status == 'open', limit=limit)
 
     async def only_closed(self, limit: int | None = None):
-        return await self.some(f"{self.table_name}.status='closed'", limit=limit)
+        return await self.some(Incident.status == 'closed', limit=limit)
 
     async def pagination(self, skip: int, limit: int, load_relations: bool = False) -> tuple[Incident]:
         return await self._pagination(

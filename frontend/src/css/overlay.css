@@ -25,6 +25,20 @@
     max-height: 90vh;
 }
 
+@media (max-width: 768px) {
+    .overlay-content {
+        border-width: 0;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        z-index: 9999; /* Самый высокий z-index */
+        overflow: auto;
+        width: 100%;
+        max-height: 90vh;
+    }
+}
+
 .overlay-close {
     position: absolute;
     top: 10px;

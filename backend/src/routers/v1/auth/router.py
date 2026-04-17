@@ -1,9 +1,9 @@
 from fastapi import APIRouter, status, Response
 from fastapi.requests import Request
 
-from src.core.pydantic_misc_models import Ok
-from src.core.fast_decorators import cache, rate_limiter
-from src.core.redis_client import RedisDep
+from core.pydantic_misc_models import Ok
+from core.fast_decorators import cache, rate_limiter
+from core.redis_client import RedisDep
 from src.handlers import AuthHandler, UserLogin, UserRegister
 from src.depends import UserDep
 from .models import User
@@ -36,5 +36,4 @@ async def register(request: Request, user_data: UserRegister):
 @auth_router_v1.get('/who_am_i', response_model=User)
 @rate_limiter(10, 30)
 async def who_am_i(request: Request, response: Response, user: UserDep):
-    print(user)
     return {'name': user.name}

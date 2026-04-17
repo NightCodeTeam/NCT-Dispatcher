@@ -9,15 +9,14 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 import redis.asyncio as redis
-from fastapi import FastAPI, Request, HTTPException, status
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.core.debug import logger
-from src.core.fast_middlewares import blocker_check
-from src.core.redis_client import RedisClient
+from core.redis_client import RedisClient
+from core.fast_middlewares import blocker_check
 from src.routers import incidents_router_v1, apps_router_v1, auth_router_v1
 from src.database import init_db
-from src.services import auth_service, blocklist_service
+from src.services import blocklist_service
 
 from src.settings import settings
 

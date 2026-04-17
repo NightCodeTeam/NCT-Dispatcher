@@ -11,8 +11,8 @@ import {Logout} from "@/pages/auth/logout.jsx";
 import {Register} from "@/pages/auth/register.jsx";
 import {AuthOutlet} from "@/pages/auth/outlet.jsx";
 import Dashboard_old from "@/pages/dashboard_old.jsx";
-import AppsView from "@/pages/apps/desktop.jsx";
-import IncidentsView from "@/pages/incidents/incidents.jsx";
+import AppsView from "@/pages/apps.jsx";
+import IncidentsView from "@/pages/incidents.jsx";
 import {useTheme} from "@/context/theme.jsx"
 
 

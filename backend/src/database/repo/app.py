@@ -1,29 +1,31 @@
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.debug import logger
-from src.core.trash import generate_trash_string
-from src.core.sql_repository import Repository, ItemNotFound
-from database.models import App
+from core.trash import generate_trash_string
+from core.sql_repository import RepositoryObj, ItemNotFound
+from src.database.models import App
 
 
-class AppRepo(Repository):
+class AppRepo(RepositoryObj):
     def __init__(self, session: AsyncSession):
         super().__init__(App, session=session, relationships=('incidents',))
 
+    @staticmethod
+    def generate_code() -> str:
+        return generate_trash_string(20)
+
     async def exists(self, app_id: int) -> bool:
-        return await self._exists(f"{self.table_name}.id={app_id}")
+        return await self._exists(App.id == app_id)
 
     async def by_id(self, app_id: int, load_relations: bool = True) -> App | None:
         return await self.get(
-            f"{self.table_name}.id={app_id}",
+            App.id == app_id,
             load_relations=load_relations
         )
 
     async def by_name(self, name: str, load_relations: bool = True) -> App | None:
         return await self.get(
-            f"{self.table_name}.name='{name}'",
+            App.name == name,
             load_relations=load_relations
         )
 
@@ -34,7 +36,7 @@ class AppRepo(Repository):
         load_relations: bool = True
     ) -> App | None:
         return await self.get(
-            f"{self.table_name}.name='{name}' AND {self.table_name}.code='{code}'",
+            and_(App.name == name, App.code == code),
             load_relations=load_relations
         )
 
@@ -46,14 +48,18 @@ class AppRepo(Repository):
         name: str,
         added_by_id: int,
         status_url: str | None = None,
+        status_code: str | None = None,
         logs_folder: str | None = None,
+        script_path: str | None = None,
         commit: bool = False
     ) -> bool:
         return await self.add(App(
             name=name,
-            code=generate_trash_string(20),
+            code=self.generate_code(),
             status_url=status_url,
+            status_code=status_code,
             logs_folder=logs_folder,
+            script_path=script_path,
             added_by_id=added_by_id,
         ), commit=commit)
 

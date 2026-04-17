@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status, Body
 
-from database.models import App
+from src.database.models import App
 from .db import DBDep
 
 

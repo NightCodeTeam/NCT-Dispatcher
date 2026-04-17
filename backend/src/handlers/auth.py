@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from fastapi import Request, Response, HTTPException, status
 
 from src.services import auth_service, blocklist_service
-from src.core.simplejwt import SimpleJWT, TokenData
+from core.simplejwt import SimpleJWT, TokenData
 
 from src.settings import settings
 

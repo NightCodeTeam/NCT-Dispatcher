@@ -1,12 +1,10 @@
-import logging
-
-from core.requests_makers import HttpMakerAsyncImproved
+from core.requests_makers import HttpMakerAsync
 from core.redis_client import RedisClient
 
 from src.settings import settings
 
 
-class BlocklistServiceBase(HttpMakerAsyncImproved):
+class BlocklistServiceBase(HttpMakerAsync):
     """
     Базовый сервис блокировки IP-адресов. Используется только для тестов.
     """

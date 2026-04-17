@@ -3,14 +3,12 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from core.debug.debug_dataclass import Level
-
 
 class IncidentRequest(BaseModel):
     title: str
     message: str
     logs: str
-    level: Level
+    level: Literal['debug', 'warning', 'info', 'error', 'crit']
 
 
 class NewStatusRequest(BaseModel):
@@ -22,7 +20,7 @@ class IncidentResponse(BaseModel):
     title: str
     message: str
     logs: str
-    level: Level
+    level: Literal['debug', 'warning', 'info', 'error', 'crit']
     status: str
     app_name: str
     created_at: datetime

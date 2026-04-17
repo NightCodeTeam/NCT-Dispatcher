@@ -6,7 +6,6 @@ from fastapi import Depends
 from .app import AppDep
 from .auth import UserDep
 from .db import DBDep
-from core.redis_client import RedisDep
 
 
 @dataclass(frozen=True, slots=True)

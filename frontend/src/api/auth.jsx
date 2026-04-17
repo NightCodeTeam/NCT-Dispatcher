@@ -1,4 +1,4 @@
-import api from './main.jsx'
+import api from './base.jsx'
 
 
 export const auth_service = {

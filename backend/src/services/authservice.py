@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 from fastapi import HTTPException
 
-from src.core.requests_makers import HttpMakerAsyncImproved
-from src.core.redis_client import RedisClient
+from core.requests_makers import HttpMakerAsync
+from core.redis_client import RedisClient
 
 from src.settings import settings
 
@@ -25,7 +25,7 @@ class User:
     key_id: int
 
 
-class AuthService(HttpMakerAsyncImproved):
+class AuthService(HttpMakerAsync):
     def __init__(self):
         super().__init__(
             base_url=settings.AUTH_URL,

@@ -1,4 +1,4 @@
-import {Link, useNavigate} from "react-router-dom";
+import {Link, useNavigate, useLocation} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {useAuth} from "@/context/auth.jsx";
 import {useTheme} from "@/context/theme.jsx";
@@ -96,6 +96,7 @@ const MobileHeaderView = ({headers, set_show, theme, handle_theme, user}) => {
 
 
 const CustomHeader = ({logo, headers}) => {
+    const location = useLocation()
     const { user } = useAuth();
     const { theme, set_theme } = useTheme();
     const { isMobile } = useDevice();
@@ -108,7 +109,7 @@ const CustomHeader = ({logo, headers}) => {
 
     useEffect(() => {
 
-    }, []);
+    }, [user, theme, location]);
 
     return <header>
         {logo}

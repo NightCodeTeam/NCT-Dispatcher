@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import auth_service from '@/api/auth.jsx';
+import {LoadingAnimation} from "@/components/utils/loading_animation.jsx";
 
 
 const AuthContext = createContext({});
@@ -30,12 +31,17 @@ export function AuthProvider({ children }) {
     const login = async (name, password) => {
         const data = await auth_service.login(name, password);
         set_user(data)
+        check_auth()
     };
 
     const logout = async () => {
         await auth_service.logout();
         set_user(null);
     };
+
+    if (loading) {
+        return <LoadingAnimation />
+    }
 
     return (
         <AuthContext.Provider value={{

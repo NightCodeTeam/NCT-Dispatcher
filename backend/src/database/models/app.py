@@ -1,6 +1,6 @@
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from sqlalchemy import Integer, ForeignKey
-from ..database import Base
+from sqlalchemy import Integer
+from src.database import Base
 from .incident import Incident
 
 
@@ -11,8 +11,8 @@ class App(Base):
     name: Mapped[str] = mapped_column(unique=True)
     code: Mapped[str] = mapped_column(unique=True, nullable=False)
 
-    status_url: Mapped[str] = mapped_column(nullable=True)
-    status_access_code: Mapped[str] = mapped_column(nullable=True)
+    status_url: Mapped[str]
+    status_code: Mapped[str] = mapped_column(nullable=True)
     logs_folder: Mapped[str] = mapped_column(nullable=True)
     script_path: Mapped[str] = mapped_column(nullable=True)
 
