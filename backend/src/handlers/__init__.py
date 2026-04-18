@@ -8,3 +8,4 @@ else:
     from .auth import AuthHandler
 
 from .apps import AppHandler
+from .incidents import IncidentsHandler

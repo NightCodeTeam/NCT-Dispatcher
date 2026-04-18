@@ -81,7 +81,7 @@ const PaginationTable = ({ CustomHead, Line, Detail, api_request, adt_style }) =
             <span style={{userSelect: 'none', padding: '0 5px'}}>{page + 1}</span>
             <button onClick={() => move_page(true)} style={{
                 userSelect: 'none',
-            }}>{'🠞'}</button>
+            }} disabled={items?.length < rows_per_page}>{'🠞'}</button>
             <SelectDropdown callback={set_rows_per_page}/>
         </div>
         {show_detail ? <Detail data={detail_data} isMobile={isMobile} on_close={() => set_show_detail(false)} update={get_items}/> : null}

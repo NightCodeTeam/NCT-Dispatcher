@@ -29,6 +29,17 @@ export const back_service = {
             })).data.ok || false
         },
 
+        update: async ({app_id, name, status_url, status_code, logs_folder, script_path, new_code}) => {
+            return (await api.put(`/v1/apps/${app_id}`, {
+                name: name,
+                status_url: status_url,
+                status_code: status_code,
+                logs_folder: logs_folder,
+                script_path: script_path,
+                new_code: new_code,
+            }))?.data.ok || false
+        },
+
         del: async (app_id) => {
             return (await api.delete(`/v1/apps/${app_id}`)).data.ok || false
         },

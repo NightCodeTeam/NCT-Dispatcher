@@ -1,11 +1,10 @@
 import {useEffect, useState} from "react";
-import PaginationTable from "@/components/utils/custom_tables.jsx";
-import back_service from "@/api/main.jsx";
-import NewAppForm from "@/components/apps/new_form.jsx";
 import useDevice from "@/context/mobile.jsx";
-import {AppStatus} from "@/components/apps/status.jsx";
+import back_service from "@/api/main.jsx";
+import PaginationTable from "@/components/utils/custom_tables.jsx";
+import NewAppForm from "@/components/apps/new_form.jsx";
 import AdtDataTable from "@/components/apps/adt_data.jsx";
-import adt_data from "@/components/apps/adt_data.jsx";
+import {AppStatus} from "@/components/apps/status.jsx";
 import {AppChange} from "@/components/apps/change.jsx";
 
 
@@ -82,6 +81,7 @@ const AppLogsData = ({data}) => {
 
 const AppDetail = ({data, on_close, update}) => {
     const [new_data, set_new_data] = useState({
+        app_id: data.id,
         name: data.name,
         status_url: data.status_url,
         status_code: data.status_code,
@@ -97,9 +97,12 @@ const AppDetail = ({data, on_close, update}) => {
             [e.target.name]: e.target.value,
         });
     }
-    const change_app_submit = (e) => {
+    const change_app_submit = async (e) => {
         e.preventDefault()
-        console.log(new_data)
+        if (await back_service.apps.update(new_data)) {
+            set_change(false)
+        }
+
     }
 
     const handleOuterClick = () => {
@@ -206,7 +209,7 @@ const AppsPage = () => {
 
     }, []);
 
-    return <div style={{boxSizing: 'border-box', width: '100%', maxWidth: '50em', padding: 5}}>
+    return <div style={{width: '100%', maxWidth: '50em', padding: 5}}>
         <button className='rounded_border base_margins' onClick={() => set_show_new(true)} style={{
             marginBottom: 5
         }}>Создать новое</button>

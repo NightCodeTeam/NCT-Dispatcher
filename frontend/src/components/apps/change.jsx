@@ -1,5 +1,5 @@
 export const AppChange = ({handleChange, form_submit, formData}) => {
-    return <form className='base_flex_column' onSubmit={() => form_submit()} style={{
+    return <form className='base_flex_column' onSubmit={(e) => form_submit(e)} style={{
         width: '100%',
         alignItems: 'flex-start',
     }}>
