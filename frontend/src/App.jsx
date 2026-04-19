@@ -25,10 +25,12 @@ function App() {
         {
             path: '/apps',
             label: 'Приложения',
+            no_user_show: false,
         },
         {
             path: '/incidents',
-            label: 'Инциденты'
+            label: 'Инциденты',
+            no_user_show: false
         },
     ]
 

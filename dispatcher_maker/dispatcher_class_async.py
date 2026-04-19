@@ -49,7 +49,7 @@ class DispatcherAsync:
                         'level': level,
                     },
                     'app_name': self.__app_name,
-                    'code': self.__code,
+                    'app_code': self.__code,
                 }
             )
             return True if res is not None and (await res.json())['ok'] == True else False

@@ -73,11 +73,11 @@ const PaginationTable = ({ CustomHead, Line, Detail, api_request, adt_style }) =
         <div className='base_flex_row no_wrap'>
             <button onClick={() => move_page(false)} style={{
                 userSelect: 'none',
-            }} disabled={page <= 0}>{'🠜'}</button>
+            }} disabled={page <= 0}>{'⯇'}</button>
             <span style={{userSelect: 'none', padding: '0 5px'}}>{page + 1}</span>
             <button onClick={() => move_page(true)} style={{
                 userSelect: 'none',
-            }} disabled={items?.length < rows_per_page}>{'🠞'}</button>
+            }} disabled={items?.length < rows_per_page}>{'⯈'}</button>
             <SelectDropdown callback={set_rows_per_page} selected={rows_per_page}/>
         </div>
         {show_detail ? <Detail data={detail_data} isMobile={isMobile} on_close={() => set_show_detail(false)} update={get_items}/> : null}

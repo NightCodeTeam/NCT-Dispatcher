@@ -6,6 +6,7 @@ import NewAppForm from "@/components/apps/new_form.jsx";
 import AdtDataTable from "@/components/apps/adt_data.jsx";
 import {AppStatus} from "@/components/apps/status.jsx";
 import {AppChange} from "@/components/apps/change.jsx";
+import {LoadingSimpleBlock} from "@/components/utils/loading_animation.jsx";
 
 
 const AppHead = ({isMobile}) => {
@@ -33,27 +34,37 @@ const AppLine = ({data, update, action_on_click, isMobile}) => {
 
 const LogView = ({data}) => {
     const [extended, set_extended] = useState(false)
-    return <div className='rounded_border' style={{
+
+    return <div className='rounded_border base_flex_column no_select no_wrap' style={{
+        alignItems: 'flex-start',
         padding: '5px',
-        flex: 1,
-        boxSizing: 'border-box',
         width: '100%',
     }}>
         <span onClick={() => set_extended(!extended)}><b>{data.title}</b> {extended ? '⯆': '⯈'}</span>
-        {extended && <ul style={{
-            color: 'rgba(174, 209, 243, 1)',
-            backgroundColor: 'rgba(11, 20, 30, 1)',
-            padding: "5px",
-            marginBottom: '3px',
-        }} className='rounded_border'>
-            {data.log.split('\n').map((item, i) => <li key={i} style={{
-                listStyle: 'none',
-            }}><span style={{
-                userSelect: 'none',
-                color: 'rgba(174, 209, 243, 1)',
-                backgroundColor: 'rgba(11, 20, 30, 1)',
-            }}>{i}: </span>{item}</li>)}
-        </ul>}
+        {extended && <table style={{
+            color: `#111111`,
+            borderWidth: '0px',
+            borderCollapse: 'collapse',
+        }}>
+            <tbody>
+            {data.log.split('\n').map((log, i) => <tr key={i}>
+                <td style={{
+                    textAlign: 'right',
+                    verticalAlign: 'top',
+                    paddingRight: '5px',
+                    color: '#34adf8',
+                    backgroundColor: '#1e1e1e',
+                }}>{i}</td>
+                <td style={{
+                    textWrap: 'wrap',
+                    wordBreak: 'break-all',
+                    color: '#aaaaaa',
+                    backgroundColor: '#1e1e1e',
+                    padding: '0px 5px 0px 3px'
+                }}>{log}</td>
+                </tr>)}
+            </tbody>
+        </table>}
     </div>
 }
 
@@ -63,18 +74,26 @@ const AppLogsData = ({data}) => {
     const [logs, set_logs] = useState([])
 
     const handle_download = async () => {
+        set_load(true)
         set_logs(await back_service.apps.logs(data.id))
+        set_load(false)
     }
 
-    return <div className='rounded_border' style={{width:'100%'}}>
-        {logs.length > 0 ? <div className='base_flex_column' style={{
-                padding: '5px', boxSizing: 'border-box'
-            }}>
-            {logs.map((log, i) => <LogView key={i} data={log} />)}
-            </div>:
-            <div style={{padding: 5, maxWidth: '150px'}} onClick={() => handle_download()}>
-                Скачать логи?
-            </div>}
+    if (load) {
+        return <LoadingSimpleBlock/>
+    }
+
+    return <div className='rounded_border' style={{width:'100%', padding: '5px'}}>
+        {logs.length > 0 ? (
+                <div className='base_flex_column no_wrap'>
+                    {logs.map((log, i) => <LogView key={i} data={log} />)}
+                </div>
+            ):(
+                <div style={{maxWidth: '150px', userSelect: 'none'}} onClick={() => handle_download()}>
+                    Скачать логи?
+                </div>
+            )
+        }
     </div>
 }
 
@@ -119,9 +138,11 @@ const AppDetail = ({data, on_close, update}) => {
     };
 
     return <div className='overlay-backdrop' onClick={handleOuterClick}>
-        <div className='overlay-content rounded_border base_flex_column' style={{
+        <div className='overlay-content rounded_border base_flex_column no_wrap' style={{
             alignItems: 'flex-start',
-            padding: '5px'
+            padding: '5px',
+            width: '100%',
+            maxWidth: '50rem',
         }} onClick={handleInnerClick}>
             <div className='base_flex_row' style={{
                 justifyContent: 'space-between',

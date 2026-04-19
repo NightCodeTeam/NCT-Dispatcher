@@ -20,12 +20,6 @@ api.interceptors.response.use(
         if ((isNetworkError || isServerError) && !isRedirecting) {
               isRedirecting = true;
 
-              // Вариант А: Если вы используете React Router v6 BrowserRouter
-              // Обратите внимание: использовать useNavigate() внутри перехватчика напрямую НЕЛЬЗЯ (хуки вне компонентов).
-              // Поэтому либо передаем navigate через инстанс, либо используем window.location.
-
-              // Самый надежный способ для перехватчика:
-              // Проверяем, не находимся ли мы уже на странице ошибки, чтобы избежать бесконечного цикла
               if (!window.location.pathname.includes('/error')) {
                 window.location.href = '/auth/login';
               } else {
