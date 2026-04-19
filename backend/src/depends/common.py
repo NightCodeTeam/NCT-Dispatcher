@@ -28,7 +28,7 @@ class CommonApp:
     app: AppDep
 
 
-def get_common_app_dep(user: UserDep, db: DBDep, xapp: AppDep) -> CommonApp:
+def get_common_app_dep(user: UserDep, db: DBDep, app: AppDep) -> CommonApp:
     return CommonApp(user=user, db=db, app=app)
 
 
