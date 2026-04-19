@@ -2,7 +2,11 @@
     position: relative;
     width: 100%;
     max-width: 75px;
+
+
     user-select: none;
+
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
 }
 
 .select-header {
@@ -10,10 +14,11 @@
     justify-content: space-between;
     align-items: center;
     transition: all 0.2s ease;
+    font-weight: 500;
 }
 
 .select-header:hover {
-    border-color: #9ca3af;
+    border-color: var(--button-hover-border-color);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -30,32 +35,36 @@
 }
 
 .select-options {
+    max-height: 250px;
     position: absolute;
     top: calc(100% + 4px);
     left: 0;
     right: 0;
     margin: 0;
-    padding: 4px 0;
+    padding: 0 0;
     list-style: none;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     z-index: 1000;
-    max-height: 250px;
     overflow-y: auto;
+    background-color: var(--bg-color);
+    color: var(--text-color);
 }
 
 .select-option {
     padding: 10px 16px;
     cursor: pointer;
     transition: background-color 0.15s ease;
-    font-size: 16px;
-    color: #374151;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    border-radius: 10px;
+    border: 0 solid var(--border-color);
 }
 
 .select-option:hover {
-    background-color: #f3f4f6;
+    background-color: var(--text-color);
+    color: var(--bg-color);
 }
 
 .select-option.selected {

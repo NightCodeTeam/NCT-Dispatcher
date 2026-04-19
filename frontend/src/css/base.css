@@ -124,3 +124,7 @@ button:disabled, input:disabled {
     flex-wrap: nowrap;
     text-wrap: nowrap;
 }
+
+.space-between {
+    justify-content: space-between;
+}
