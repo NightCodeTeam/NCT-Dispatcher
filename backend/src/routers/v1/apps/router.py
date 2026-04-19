@@ -1,6 +1,8 @@
+from typing import Union
+
 from fastapi import APIRouter, HTTPException, status
 
-from core.pydantic_misc_models import Ok
+from core.pydantic_misc_models import Ok, Detail
 from core.fast_decorators import cache, rate_limiter
 from core.redis_client import RedisDep
 from core.fast_depends import PaginationParams
@@ -93,7 +95,15 @@ async def update_app(app_id: int, new_data: AppUpdateRequest, common: CommonDep)
     return {'ok': await AppHandler(common.db).update(app=app, new_data=new_data)}
 
 
-@apps_router_v1.get('/{app_id}/logs', response_model=AppMultipleLogFilesResponse)
+@apps_router_v1.get(
+    '/{app_id}/logs',
+    response_model=Union[AppMultipleLogFilesResponse, None, Detail],
+    responses={
+        200: {'description': 'App logs retrieved successfully', 'model': AppMultipleLogFilesResponse},
+        204: {'description': 'No logs found'},
+        404: {'description': 'App not found', 'model': Detail},
+    },
+)
 @rate_limiter(max_requests=10, time_delta=60)
 async def app_logs(app_id: int, common: CommonDep):
     """
@@ -107,11 +117,11 @@ async def app_logs(app_id: int, common: CommonDep):
         )
 
     try:
-        return {'logs': await AppHandler(common.db).logs(app=app)}
+        logs = await AppHandler(common.db).logs(app=app)
+        return {'logs': logs}
     except FileNotFoundError:
         return HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Logs folder not found'
+            status_code=status.HTTP_204_NO_CONTENT,
         )
 
 

@@ -24,4 +24,4 @@ class App(Base):
         return f'<App {self.name}>'
 
     def __str__(self) -> str:
-        return f'{self.name} ({self.code})'
+        return f'App {self.name}'
