@@ -12,7 +12,7 @@ from src.settings import settings
 @dataclass(frozen=True, slots=True)
 class AuthToken:
     access_token: str
-    refresh_token: str
+    refresh_token: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,7 +61,7 @@ class AuthService(HttpMakerAsync):
                 status_code=ans.status,
                 detail=ans.json.get('detail', 'Unknown error')
             )
-        return AuthToken(ans.json['access_token'], ans.json['refresh_token'])
+        return AuthToken(ans.json['access_token'], None)
 
     async def register(self, name: str, password: str, key: str) -> bool:
         return (await self._make('/v1/auth/register', method='POST', json={

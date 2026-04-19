@@ -84,7 +84,7 @@ class AuthHandlerBase:
             )
 
     @staticmethod
-    def _set_tokens(response: Response, access_token: str, refresh_token: str):
+    def _set_tokens(response: Response, access_token: str, refresh_token: str | None):
         """
         Установка токенов в куки
         """
@@ -96,21 +96,22 @@ class AuthHandlerBase:
             samesite='lax',
             max_age=settings.AUTH_ACCESS_EXPIRE,
         )
-        response.set_cookie(
-            key='refresh_token',
-            value=refresh_token,
-            httponly=True,
-            secure=not settings.DEBUG,
-            samesite='lax',
-            max_age=settings.AUTH_REFRESH_EXPIRE_DAYS * 24 * 60 * 60,
-        )
+        if refresh_token:
+            response.set_cookie(
+                key='refresh_token',
+                value=refresh_token,
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite='lax',
+                max_age=settings.AUTH_REFRESH_EXPIRE_DAYS * 24 * 60 * 60,
+            )
 
-    async def _create_new_tokens(self, response: Response, refresh_token: str):
+    async def _create_new_access_token(self, response: Response, refresh_token: str):
         """
         Создание новых токенов
         """
         new_tokens = await auth_service.refresh(refresh_token)
-        self._set_tokens(response, new_tokens.access_token, new_tokens.refresh_token)
+        self._set_tokens(response, new_tokens.access_token, None)
 
     async def verify_token(self, request: Request, response: Response) -> User:
         """Попытка проверить токены пользователя."""
@@ -199,7 +200,7 @@ class AuthHandler(AuthHandlerBase):
                     detail="Invalid token"
                 )
             await self._valid_token_data(refresh_token, 'refresh', host)
-            await self._create_new_tokens(
+            await self._create_new_access_token(
                 response=response,
                 refresh_token=refresh_token_str
             )
