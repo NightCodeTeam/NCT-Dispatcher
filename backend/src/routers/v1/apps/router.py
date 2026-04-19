@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException, status
 
 from core.pydantic_misc_models import Ok
@@ -36,6 +35,7 @@ async def all_apps(pagination: PaginationParams, common: CommonDep, redis: Redis
 
 
 @apps_router_v1.post('/new', response_model=Ok)
+@rate_limiter(max_requests=10, time_delta=60)
 async def new_app(app: NewAppRequest, common: CommonDep):
     """
     Создание нового приложения.
@@ -63,7 +63,7 @@ async def app_by_id(app_id: int, common: CommonDep, redis: RedisDep):
     """
     Получение данных о приложении по ID.
     """
-    app = await common.db.apps.by_id(app_id=app_id)
+    app = await AppHandler(common.db).by_id(app_id)
     if app is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -73,7 +73,7 @@ async def app_by_id(app_id: int, common: CommonDep, redis: RedisDep):
 
 
 @apps_router_v1.put('/{app_id}', response_model=Ok)
-@rate_limiter(max_requests=10, time_delta=30)
+@rate_limiter(max_requests=10, time_delta=60)
 async def update_app(app_id: int, new_data: AppUpdateRequest, common: CommonDep):
     """
     Обновление данных о приложении.
@@ -94,7 +94,7 @@ async def update_app(app_id: int, new_data: AppUpdateRequest, common: CommonDep)
 
 
 @apps_router_v1.get('/{app_id}/logs', response_model=AppMultipleLogFilesResponse)
-@rate_limiter(max_requests=10, time_delta=30)
+@rate_limiter(max_requests=10, time_delta=60)
 async def app_logs(app_id: int, common: CommonDep):
     """
     Получение логов приложения по ID.
@@ -116,6 +116,7 @@ async def app_logs(app_id: int, common: CommonDep):
 
 
 @apps_router_v1.delete('/{app_id}', response_model=Ok)
+@rate_limiter(max_requests=10, time_delta=60)
 async def del_app_by_id(app_id: int, common: CommonDep):
     """
     Удаление приложения по ID.

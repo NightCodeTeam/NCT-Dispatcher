@@ -19,3 +19,9 @@ class App(Base):
     added_by_id: Mapped[int]
 
     incidents = relationship(Incident, back_populates='app', cascade='all, delete')
+
+    def __repr__(self) -> str:
+        return f'<App {self.name}>'
+
+    def __str__(self) -> str:
+        return f'{self.name} ({self.code})'

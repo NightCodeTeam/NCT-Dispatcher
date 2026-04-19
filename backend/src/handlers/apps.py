@@ -63,6 +63,26 @@ class AppHandler:
 
         return tuple(apps.values())
 
+    async def by_id(self, app_id: int) -> dict | None:
+        """
+        Получает приложение по его ID.
+        """
+        app = await self.db.apps.by_id(app_id, load_relations=True)
+        if app is None:
+            return None
+        app = {
+            'id': app.id,
+            'name': app.name,
+            'code': app.code,
+            'status_url': app.status_url,
+            'status_code': app.status_code,
+            'logs_folder': app.logs_folder,
+            'script_path': app.script_path,
+            'incidents_count': len(app.incidents),
+        }
+        app['status'] = await self.get_status(app)
+        return app
+
     async def update(
         self,
         app: App,
