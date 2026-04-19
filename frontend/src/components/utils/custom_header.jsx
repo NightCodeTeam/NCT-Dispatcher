@@ -74,7 +74,7 @@ const MobileHeaderView = ({headers, set_show, theme, handle_theme, user}) => {
                         <img src={dark} alt="темная тема" className='header_a_theme_icon'/>
                     </div>
                 )}
-                {user.name === null || user.name === undefined ? (
+                {user.name === null ? (
                     <div onClick={() => nav('/auth/login')} style={{
                         height: '10vh',
                         padding: '0 15px',
