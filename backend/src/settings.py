@@ -6,13 +6,12 @@ class Settings(BaseSettings):
 
     # env
     DEBUG: bool
+
     HOST: str
     PORT: int
+
     DB_PATH: str
     APP_ACCESS_KEY: str
-    TELEGRAM_BOT_TOKEN: str
-    TELEGRAM_CHAT_ID: int
-    BOT_SLEEP: int
 
     AUTH_URL: str
     AUTH_SECRET_KEY: str
