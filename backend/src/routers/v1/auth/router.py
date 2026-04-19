@@ -25,7 +25,6 @@ async def refresh(request: Request, response: Response):
     """
     Обновление токена доступа.
     """
-    #await auth.refresh(request=request, response=response)
     return {'ok': True}
 
 
