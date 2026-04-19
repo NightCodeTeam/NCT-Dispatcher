@@ -14,7 +14,8 @@ export function AuthProvider({ children }) {
 
     const check_auth = async () => {
         try {
-            set_user(await auth_service.user())
+            const new_user = await auth_service.user()
+            set_user(prev => ({ ...prev, name: new_user.name }))
         } catch (error) {
             if (error.status === 401) {
                 set_user({name: null});

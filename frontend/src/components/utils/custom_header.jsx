@@ -51,13 +51,13 @@ const MobileHeaderView = ({headers, set_show, theme, handle_theme, user}) => {
         <div className='header_overlay-content base_flex_column rounded_border' style={{
             padding: '5px'
         }} onClick={(e) => handleInnerClick(e)}>
-            {mobile_headers.map((header, i) => (user?.name === '' || user?.name === null) && header?.no_user_show && (
+            {mobile_headers.map((header, i) => (user?.name !== null && !header.no_user_show) ? (
                 <div key={i} style={{
                     backgroundColor: is_current_window(header.path) ? 'var(--header-current-color)' : 'inherit',
                     color: is_current_window(header.path) ? 'var(--header-current-text-color)' : 'var(--header-text-color)',
                     ...header.m_style,
-                }} onClick={() => nav(header.path)} className='header_a_c'>{header.label}</div>
-            ))}
+                }} onClick={() => nav(header.path)} className='header_a_c'>{header.label}</div>):null
+            )}
             <div className='base_flex_row' style={{
                 width: '100%',
                 flexWrap: 'nowrap',
@@ -135,11 +135,11 @@ const CustomHeader = ({logo, headers}) => {
             </div>
             ):(
             <div className='base_flex_row header_container'>
-                {headers.map((header, i) => <Link key={i} to={header.path} style={{
+                {headers.map((header, i) => (user?.name !== null && !header.no_user_show) ? <Link key={i} to={header.path} style={{
                     backgroundColor: is_current_window(header.path) ? 'var(--header-current-color)': 'inherit',
                     color: is_current_window(header.path) ? 'var(--header-current-text-color)': 'var(--header-text-color)',
                     ...header.d_style,
-                }} className='header_a'>{header.label}</Link>)}
+                }} className='header_a'>{header.label}</Link>: null)}
                 {theme === 'dark' ? (
                     <div className='header_a_theme base_flex_column' onClick={() => handle_theme('light')}>
                         <img src={light} alt="светлая тема" className='header_a_theme_icon'/>
