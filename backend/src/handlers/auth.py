@@ -182,7 +182,7 @@ class AuthHandler(AuthHandlerBase):
         access_token_str = request.cookies.get("access_token")
         access_token = None
         if access_token_str is not None:
-            access_token = self.jwt.verify_token(access_token_str)
+            access_token = self.jwt.verify_token(access_token_str, valid_time=settings.AUTH_ACCESS_EXPIRE)
 
         host = request.client.host
         if access_token is None:
@@ -193,7 +193,10 @@ class AuthHandler(AuthHandlerBase):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid token"
                 )
-            refresh_token = self.jwt.verify_token(refresh_token_str)
+            refresh_token = self.jwt.verify_token(
+                refresh_token_str,
+                valid_time=settings.AUTH_REFRESH_EXPIRE_DAYS * 24 * 60 * 60
+            )
             if refresh_token is None:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
@@ -205,8 +208,8 @@ class AuthHandler(AuthHandlerBase):
                 refresh_token=refresh_token_str
             )
             return User(
-                id=refresh_token.payload['uid'],
-                name=refresh_token.payload['usp'],
+                id=refresh_token.payload['usp'],
+                name=refresh_token.payload['uid'],
             )
         await self._valid_token_data(access_token, 'access', host)
         return User(
