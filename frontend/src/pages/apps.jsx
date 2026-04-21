@@ -98,7 +98,8 @@ const AppLogsData = ({data}) => {
 }
 
 
-const AppDetail = ({data, on_close, update}) => {
+const AppDetail = ({ data, on_close, update }) => {
+    console.log(data)
     const [new_data, set_new_data] = useState({
         app_id: data.id,
         name: data.name,
