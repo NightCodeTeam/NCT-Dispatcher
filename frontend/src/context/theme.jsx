@@ -5,7 +5,7 @@ const ThemeContext = createContext({});
 
 
 export function ThemeProvider({ children }) {
-    const [theme, setTheme] = useState();
+    const [theme, setTheme] = useState(get_theme());
 
     function get_theme() {
         const them = localStorage.getItem('theme')
