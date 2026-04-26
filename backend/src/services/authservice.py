@@ -36,8 +36,12 @@ class AuthService(HttpMakerAsync):
             parse_method=self._get_simple_response,
         )
 
-    async def login(self, name: str, password: str) -> AuthToken:
-        ans = await self._make('/v1/auth/login', method='POST', json={'name': name, 'password': password})
+    async def login(self, name: str, password: str, ip: str) -> AuthToken:
+        ans = await self._make('/v1/auth/login', method='POST', json={
+            'name': name,
+            'password': password,
+            'ip': ip
+        })
         if ans.status != 200:
             raise HTTPException(
                 status_code=ans.status,
@@ -54,8 +58,11 @@ class AuthService(HttpMakerAsync):
             )
         return ans.json['ok']
 
-    async def refresh(self, refresh_token: str) -> AuthToken:
-        ans = await self._make('/v1/auth/refresh', method='POST', json={'refresh_token': refresh_token})
+    async def refresh(self, refresh_token: str, ip: str) -> AuthToken:
+        ans = await self._make('/v1/auth/refresh', method='POST', json={
+            'refresh_token': refresh_token,
+            'ip': ip
+        })
         if ans.status != 200:
             raise HTTPException(
                 status_code=ans.status,
@@ -63,11 +70,12 @@ class AuthService(HttpMakerAsync):
             )
         return AuthToken(ans.json['access_token'], None)
 
-    async def register(self, name: str, password: str, key: str) -> bool:
+    async def register(self, name: str, password: str, key: str, ip: str) -> bool:
         return (await self._make('/v1/auth/register', method='POST', json={
             'name': name,
             'password': password,
-            'key': key
+            'key': key,
+            'ip': ip
         })).json['ok']
 
     async def user_by_id(self, user_id: int, redis: RedisClient) -> User:

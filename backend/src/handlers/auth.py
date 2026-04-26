@@ -106,11 +106,11 @@ class AuthHandlerBase:
                 max_age=settings.AUTH_REFRESH_EXPIRE_DAYS * 24 * 60 * 60,
             )
 
-    async def _create_new_access_token(self, response: Response, refresh_token: str):
+    async def _create_new_access_token(self, response: Response, refresh_token: str, ip: str):
         """
         Создание новых токенов
         """
-        new_tokens = await auth_service.refresh(refresh_token)
+        new_tokens = await auth_service.refresh(refresh_token, ip=ip)
         self._set_tokens(response, new_tokens.access_token, None)
 
     async def verify_token(self, request: Request, response: Response) -> User:
@@ -152,7 +152,7 @@ class AuthHandlerBase:
             name=access_token.payload['uid'],
         )
 
-    async def login(self, user: UserLogin, response: Response) -> bool:
+    async def login(self, user: UserLogin, response: Response, request: Request) -> bool:
         """
         Авторизация пользователя
         """
@@ -205,7 +205,8 @@ class AuthHandler(AuthHandlerBase):
             await self._valid_token_data(refresh_token, 'refresh', host)
             await self._create_new_access_token(
                 response=response,
-                refresh_token=refresh_token_str
+                refresh_token=refresh_token_str,
+                ip=request.client.host,
             )
             return User(
                 id=refresh_token.payload['usp'],
@@ -217,11 +218,11 @@ class AuthHandler(AuthHandlerBase):
             name=access_token.payload['uid'],
         )
 
-    async def login(self, user: UserLogin, response: Response) -> bool:
+    async def login(self, user: UserLogin, response: Response, request: Request) -> bool:
         """
         Авторизация пользователя
         """
-        tokens = await auth_service.login(name=user.name, password=user.password)
+        tokens = await auth_service.login(name=user.name, password=user.password, ip=request.client.host)
         self._set_tokens(response, tokens.access_token, tokens.refresh_token)
         return True
 
@@ -241,7 +242,8 @@ class AuthHandler(AuthHandlerBase):
         return await auth_service.register(
             name=user.name,
             password=user.password,
-            key=user.key
+            key=user.key,
+            ip=request.client.host,
         )
 
     async def logout(self, user: User, response: Response) -> bool:

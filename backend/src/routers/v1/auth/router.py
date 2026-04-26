@@ -13,11 +13,11 @@ auth_router_v1 = APIRouter(prefix='/v1/auth', tags=['auth'])
 
 
 @auth_router_v1.post('/login', response_model=Ok | Detail)
-async def login(response: Response, user_data: UserLogin):
+async def login(request: Request, response: Response, user_data: UserLogin):
     """
     Вход пользователя в систему.
     """
-    return {'ok': await AuthHandler().login(user_data, response)}
+    return {'ok': await AuthHandler().login(user_data, response, request)}
 
 
 @auth_router_v1.post('/refresh', response_model=Ok | Detail)
