@@ -33,9 +33,7 @@ const PaginationTable = ({ CustomHead, Line, Detail, api_request, adt_style }) =
 
     const move_page = (add) => {
         if (add) {
-            if (items.length === 0) {
-
-            } else {
+            if (items.length !== 0) {
                 set_page(page + 1);
             }
         } else {

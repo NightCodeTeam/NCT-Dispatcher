@@ -45,11 +45,11 @@ export const back_service = {
         },
     },
     incidents: {
-        all: async ({skip_ = 0, limit_ = 10}) => {
+        all: async ({skip = 0, limit = 10}) => {
             return (await api.get(`v1/incidents`, {
                 params: {
-                    skip: skip_,
-                    limit: limit_,
+                    skip: skip,
+                    limit: limit,
                 }
             })).data.incidents.sort((a, b) => b.created_at.localeCompare(a.created_at)) || []
         },
